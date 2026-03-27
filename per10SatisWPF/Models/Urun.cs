@@ -10,9 +10,12 @@ namespace per10SatisWPF.Models
         public int TurID { get; set; }
         public string? Barkod { get; set; }
 
-        public string TamAdi => $"{MarkaAdi} {UrunAdi}";
-        public string FiyatText => $"{SatisFiyati:N2} ₺";
-        public string StokText => $"Stok: {MevcutStok}";
-        public bool DusukStok => MevcutStok <= 5 && MevcutStok > 0;
+        public decimal AlisFiyati { get; set; }
+
+        public string TamAdi          => $"{MarkaAdi} {UrunAdi}";
+        public string FiyatText       => $"{SatisFiyati:N2} ₺";
+        public string AlisFiyatiText  => $"{AlisFiyati:N2} ₺";
+        public string StokText        => $"Stok: {MevcutStok}";
+        public bool   DusukStok       => MevcutStok <= 5 && MevcutStok > 0;
     }
 }
