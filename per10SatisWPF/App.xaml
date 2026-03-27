@@ -4,56 +4,115 @@
              StartupUri="LoginWindow.xaml">
     <Application.Resources>
 
-        <!-- Renkler -->
-        <SolidColorBrush x:Key="BgDark"      Color="#1E2130"/>
-        <SolidColorBrush x:Key="BgCard"      Color="#252A3A"/>
-        <SolidColorBrush x:Key="BgPanel"     Color="#1A1E2D"/>
-        <SolidColorBrush x:Key="AccentBlue"  Color="#3A7BF7"/>
-        <SolidColorBrush x:Key="AccentGreen" Color="#2ECC71"/>
-        <SolidColorBrush x:Key="AccentRed"   Color="#E74C3C"/>
-        <SolidColorBrush x:Key="AccentOrange" Color="#F39C12"/>
-        <SolidColorBrush x:Key="TextWhite"   Color="#ECEFF4"/>
-        <SolidColorBrush x:Key="TextGray"    Color="#8892A4"/>
-        <SolidColorBrush x:Key="BorderColor" Color="#2D3348"/>
-        <SolidColorBrush x:Key="NumpadBg"    Color="#2A2F42"/>
+        <!-- ══ RENK PALETİ ══════════════════════════════════════════ -->
+        <Color x:Key="C_BgDark"       >#12151E</Color>
+        <Color x:Key="C_BgPanel"      >#181C28</Color>
+        <Color x:Key="C_BgCard"       >#1F2436</Color>
+        <Color x:Key="C_BgCardHover"  >#252C42</Color>
+        <Color x:Key="C_Blue"         >#4A7CF6</Color>
+        <Color x:Key="C_BlueDark"     >#2D5BD4</Color>
+        <Color x:Key="C_Green"        >#27AE60</Color>
+        <Color x:Key="C_Red"          >#E74C3C</Color>
+        <Color x:Key="C_Orange"       >#F39C12</Color>
+        <Color x:Key="C_TextPrimary"  >#EDF0F7</Color>
+        <Color x:Key="C_TextSecondary">#6B7A99</Color>
+        <Color x:Key="C_Border"       >#252C42</Color>
+        <Color x:Key="C_NumpadBg"     >#1A1E2D</Color>
 
-        <!-- Yuvarlak köşeli buton şablonu -->
+        <SolidColorBrush x:Key="BgDark"        Color="{StaticResource C_BgDark}"/>
+        <SolidColorBrush x:Key="BgPanel"       Color="{StaticResource C_BgPanel}"/>
+        <SolidColorBrush x:Key="BgCard"        Color="{StaticResource C_BgCard}"/>
+        <SolidColorBrush x:Key="BgCardHover"   Color="{StaticResource C_BgCardHover}"/>
+        <SolidColorBrush x:Key="AccentBlue"    Color="{StaticResource C_Blue}"/>
+        <SolidColorBrush x:Key="AccentGreen"   Color="{StaticResource C_Green}"/>
+        <SolidColorBrush x:Key="AccentRed"     Color="{StaticResource C_Red}"/>
+        <SolidColorBrush x:Key="AccentOrange"  Color="{StaticResource C_Orange}"/>
+        <SolidColorBrush x:Key="TextPrimary"   Color="{StaticResource C_TextPrimary}"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="{StaticResource C_TextSecondary}"/>
+        <SolidColorBrush x:Key="BorderColor"   Color="{StaticResource C_Border}"/>
+        <SolidColorBrush x:Key="NumpadBg"      Color="{StaticResource C_NumpadBg}"/>
+
+        <!-- ══ KONTROL ŞABLONLARı ═══════════════════════════════════ -->
+
+        <!-- Yuvarlak köşe butonu (genel) -->
         <ControlTemplate x:Key="RoundBtnTemplate" TargetType="Button">
-            <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="8">
-                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            <Border x:Name="bd" Background="{TemplateBinding Background}"
+                    CornerRadius="10" SnapsToDevicePixels="True">
+                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"
+                                  Margin="{TemplateBinding Padding}"/>
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="border" Property="Opacity" Value="0.88"/>
+                    <Setter TargetName="bd" Property="Opacity" Value="0.88"/>
                 </Trigger>
                 <Trigger Property="IsPressed" Value="True">
-                    <Setter TargetName="border" Property="Opacity" Value="0.75"/>
+                    <Setter TargetName="bd" Property="Opacity" Value="0.72"/>
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
-        <!-- Küçük yuvarlak buton (adet +/-) -->
+        <!-- Küçük yuvarlak (adet +/-) -->
         <ControlTemplate x:Key="SmallRoundBtnTemplate" TargetType="Button">
-            <Border x:Name="border" Background="{TemplateBinding Background}" CornerRadius="6">
+            <Border x:Name="bd" Background="{TemplateBinding Background}" CornerRadius="7">
                 <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
             </Border>
             <ControlTemplate.Triggers>
                 <Trigger Property="IsMouseOver" Value="True">
-                    <Setter TargetName="border" Property="Opacity" Value="0.85"/>
+                    <Setter TargetName="bd" Property="Opacity" Value="0.82"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="bd" Property="Opacity" Value="0.65"/>
                 </Trigger>
             </ControlTemplate.Triggers>
         </ControlTemplate>
 
-        <!-- Numpad buton stili -->
+        <!-- Kategori butonu -->
+        <ControlTemplate x:Key="KategoriBtn" TargetType="Button">
+            <Border x:Name="bd" Background="{TemplateBinding Background}"
+                    CornerRadius="10" SnapsToDevicePixels="True">
+                <ContentPresenter HorizontalAlignment="Left" VerticalAlignment="Center"
+                                  Margin="14,0,0,0"/>
+            </Border>
+            <ControlTemplate.Triggers>
+                <Trigger Property="IsMouseOver" Value="True">
+                    <Setter TargetName="bd" Property="Opacity" Value="0.85"/>
+                </Trigger>
+                <Trigger Property="IsPressed" Value="True">
+                    <Setter TargetName="bd" Property="Opacity" Value="0.7"/>
+                </Trigger>
+            </ControlTemplate.Triggers>
+        </ControlTemplate>
+
+        <!-- ══ STİLLER ═══════════════════════════════════════════════ -->
+
+        <!-- Numpad butonu -->
         <Style x:Key="NumpadStyle" TargetType="Button">
-            <Setter Property="Background"       Value="{StaticResource NumpadBg}"/>
-            <Setter Property="Foreground"       Value="{StaticResource TextWhite}"/>
-            <Setter Property="FontSize"         Value="18"/>
-            <Setter Property="FontWeight"       Value="Bold"/>
-            <Setter Property="BorderThickness"  Value="0"/>
-            <Setter Property="Margin"           Value="2"/>
-            <Setter Property="Cursor"           Value="Hand"/>
-            <Setter Property="Template"         Value="{StaticResource RoundBtnTemplate}"/>
+            <Setter Property="Background"      Value="{StaticResource NumpadBg}"/>
+            <Setter Property="Foreground"      Value="{StaticResource TextPrimary}"/>
+            <Setter Property="FontSize"        Value="20"/>
+            <Setter Property="FontWeight"      Value="Bold"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Margin"          Value="3"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Template"        Value="{StaticResource RoundBtnTemplate}"/>
+        </Style>
+
+        <!-- Ödeme butonu -->
+        <Style x:Key="OdemeBtn" TargetType="Button">
+            <Setter Property="Foreground"      Value="White"/>
+            <Setter Property="FontSize"        Value="14"/>
+            <Setter Property="FontWeight"      Value="Bold"/>
+            <Setter Property="Height"          Value="50"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Cursor"          Value="Hand"/>
+            <Setter Property="Margin"          Value="0,4,0,0"/>
+            <Setter Property="Template"        Value="{StaticResource RoundBtnTemplate}"/>
+        </Style>
+
+        <!-- ScrollBar gizle -->
+        <Style TargetType="ScrollBar">
+            <Setter Property="Width"   Value="4"/>
+            <Setter Property="Opacity" Value="0.4"/>
         </Style>
 
     </Application.Resources>

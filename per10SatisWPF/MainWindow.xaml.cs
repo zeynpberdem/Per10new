@@ -3,6 +3,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Microsoft.Data.SqlClient;
 using per10SatisWPF.Models;
 
@@ -12,23 +13,23 @@ namespace per10SatisWPF
     {
         private readonly string _connStr = @"Data Source=MertPC\SQLEXPRESS;Initial Catalog=per10Database;User ID=sa;Password=1;Encrypt=True;TrustServerCertificate=True";
 
-        private List<SepetItem> _sepet = new();
-        private List<Urun> _urunler = new();
-        private int _aktifTurID = 0;
-        private string _numpadBuffer = "";
+        private List<SepetItem> _sepet  = new();
+        private List<Urun>      _urunler = new();
+        private int    _aktifTurID    = 0;
+        private string _numpadBuffer  = "";
 
-        private readonly List<(int TurID, string Ad)> _kategoriler = new()
+        private readonly List<(int TurID, string Ikon, string Ad)> _kategoriler = new()
         {
-            (0, "Tümü"),
-            (1, "Motor Bakım"),
-            (2, "Cam Temizleyiciler"),
-            (3, "Parfümler"),
-            (4, "Jant ve Lastik Bakımı"),
-            (5, "Parlatma ve Koruma"),
-            (6, "Bezler ve Süngerler"),
-            (7, "İçecekler"),
-            (8, "Araç İç Bakım"),
-            (9, "Diğerleri"),
+            (0, "🏪", "Tümü"),
+            (1, "🔧", "Motor Bakım"),
+            (2, "🪟", "Cam Temizleyiciler"),
+            (3, "🌸", "Parfümler"),
+            (4, "🛞", "Jant ve Lastik"),
+            (5, "✨", "Parlatma ve Koruma"),
+            (6, "🧽", "Bezler ve Süngerler"),
+            (7, "🥤", "İçecekler"),
+            (8, "🚗", "Araç İç Bakım"),
+            (9, "📦", "Diğerleri"),
         };
 
         public MainWindow()
@@ -36,6 +37,7 @@ namespace per10SatisWPF
             InitializeComponent();
             Loaded += (s, e) =>
             {
+                SaatBaslat();
                 KategorileriYukle();
                 UrunleriYukle(0);
                 PlaceholderSet(txtBarkod);
@@ -43,27 +45,52 @@ namespace per10SatisWPF
             };
         }
 
+        // ─── SAAT ─────────────────────────────────────────────────────
+        private void SaatBaslat()
+        {
+            SaatGuncelle();
+            var timer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(1) };
+            timer.Tick += (s, e) => SaatGuncelle();
+            timer.Start();
+        }
+        private void SaatGuncelle() =>
+            lblSaat.Text = DateTime.Now.ToString("dd MMMM yyyy  HH:mm:ss", new System.Globalization.CultureInfo("tr-TR"));
+
         // ─── KATEGORİLER ──────────────────────────────────────────────
         private void KategorileriYukle()
         {
             pnlKategoriler.Children.Clear();
-            foreach (var (turID, ad) in _kategoriler)
+            foreach (var (turID, ikon, ad) in _kategoriler)
             {
                 bool aktif = turID == _aktifTurID;
+
+                var sp = new StackPanel { Orientation = Orientation.Horizontal };
+                sp.Children.Add(new TextBlock
+                {
+                    Text = ikon, FontSize = 14,
+                    VerticalAlignment = VerticalAlignment.Center,
+                    Margin = new Thickness(0, 0, 10, 0)
+                });
+                sp.Children.Add(new TextBlock
+                {
+                    Text = ad, FontSize = 13,
+                    Foreground = Brushes.White,
+                    VerticalAlignment = VerticalAlignment.Center
+                });
+
                 var btn = new Button
                 {
-                    Content = ad,
+                    Content = sp,
                     Tag = turID,
-                    Height = 38,
+                    Height = 42,
                     Margin = new Thickness(0, 2, 0, 2),
-                    FontSize = 13,
                     BorderThickness = new Thickness(0),
                     Cursor = Cursors.Hand,
-                    HorizontalContentAlignment = HorizontalAlignment.Left,
-                    Padding = new Thickness(12, 0, 0, 0),
-                    Background = aktif ? (Brush)FindResource("AccentBlue") : (Brush)FindResource("BgCard"),
-                    Foreground = Brushes.White,
-                    Template = (ControlTemplate)FindResource("RoundBtnTemplate")
+                    Padding = new Thickness(10, 0, 0, 0),
+                    Background = aktif
+                        ? (Brush)FindResource("AccentBlue")
+                        : (Brush)FindResource("BgCard"),
+                    Template = (ControlTemplate)FindResource("KategoriBtn")
                 };
                 btn.Click += KategoriBtn_Click;
                 pnlKategoriler.Children.Add(btn);
@@ -75,6 +102,8 @@ namespace per10SatisWPF
             if (sender is Button btn && btn.Tag is int turID)
             {
                 _aktifTurID = turID;
+                var kat = _kategoriler.FirstOrDefault(k => k.TurID == turID);
+                lblKategoriBaslik.Text = turID == 0 ? "Tüm Ürünler" : kat.Ad;
                 KategorileriYukle();
                 UrunleriYukle(turID);
             }
@@ -103,62 +132,124 @@ namespace per10SatisWPF
                 if (turID > 0) cmd.Parameters.AddWithValue("@turID", turID);
                 if (!string.IsNullOrWhiteSpace(arama)) cmd.Parameters.AddWithValue("@arama", $"%{arama}%");
 
-                using var reader = cmd.ExecuteReader();
-                while (reader.Read())
+                using var r = cmd.ExecuteReader();
+                while (r.Read())
                 {
                     var urun = new Urun
                     {
-                        UrunID      = Convert.ToInt32(reader["UrunID"]),
-                        UrunAdi     = reader["UrunAdi"].ToString()!,
-                        MarkaAdi    = reader["MarkaAdi"].ToString()!,
-                        SatisFiyati = Convert.ToDecimal(reader["SatisFiyati"]),
-                        MevcutStok  = Convert.ToInt32(reader["MevcutStok"]),
-                        TurID       = Convert.ToInt32(reader["TurID"])
+                        UrunID      = Convert.ToInt32(r["UrunID"]),
+                        UrunAdi     = r["UrunAdi"].ToString()!,
+                        MarkaAdi    = r["MarkaAdi"].ToString()!,
+                        SatisFiyati = Convert.ToDecimal(r["SatisFiyati"]),
+                        MevcutStok  = Convert.ToInt32(r["MevcutStok"]),
+                        TurID       = Convert.ToInt32(r["TurID"])
                     };
                     _urunler.Add(urun);
                     pnlUrunler.Children.Add(UrunKartiOlustur(urun));
                 }
             }
-            catch (Exception ex) { MessageBox.Show($"Ürün yükleme hatası: {ex.Message}"); }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Ürün yükleme hatası: {ex.Message}", "Hata");
+            }
+
+            lblUrunSayisi.Text = $"{_urunler.Count} ürün";
         }
 
         private Border UrunKartiOlustur(Urun urun)
         {
-            var stokRenk = urun.DusukStok
-                ? (Brush)FindResource("AccentOrange")
-                : (Brush)FindResource("AccentGreen");
-
             var border = new Border
             {
-                Width = 158, Height = 128,
+                Width = 165, Height = 138,
                 Margin = new Thickness(6),
-                CornerRadius = new CornerRadius(10),
+                CornerRadius = new CornerRadius(12),
                 Background = (Brush)FindResource("BgCard"),
-                BorderBrush = (Brush)FindResource("BorderColor"),
                 BorderThickness = new Thickness(1),
+                BorderBrush = (Brush)FindResource("BorderColor"),
                 Cursor = Cursors.Hand,
-                Tag = urun
+                Tag = urun,
+                SnapsToDevicePixels = true
             };
 
-            var grid = new Grid { Margin = new Thickness(12) };
-            grid.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
-            grid.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            // Stok rengine göre üst çizgi
+            var stokRenk = urun.MevcutStok == 0
+                ? (Brush)FindResource("AccentRed")
+                : urun.DusukStok
+                    ? (Brush)FindResource("AccentOrange")
+                    : (Brush)FindResource("AccentGreen");
 
-            var ad    = new TextBlock { Text = urun.TamAdi, Foreground = (Brush)FindResource("TextWhite"), FontSize = 12, FontWeight = FontWeights.SemiBold, TextWrapping = TextWrapping.Wrap };
-            var fiyat = new TextBlock { Text = urun.FiyatText, Foreground = (Brush)FindResource("AccentBlue"), FontSize = 15, FontWeight = FontWeights.Bold, Margin = new Thickness(0, 4, 0, 0) };
-            var stok  = new TextBlock { Text = urun.StokText, Foreground = stokRenk, FontSize = 11, Margin = new Thickness(0, 2, 0, 0) };
+            var icerik = new Grid { Margin = new Thickness(0) };
+            icerik.RowDefinitions.Add(new RowDefinition { Height = new GridLength(4) });
+            icerik.RowDefinitions.Add(new RowDefinition { Height = new GridLength(1, GridUnitType.Star) });
+            icerik.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
+            icerik.RowDefinitions.Add(new RowDefinition { Height = GridLength.Auto });
 
-            Grid.SetRow(fiyat, 1);
-            Grid.SetRow(stok, 2);
-            grid.Children.Add(ad);
-            grid.Children.Add(fiyat);
-            grid.Children.Add(stok);
-            border.Child = grid;
+            // Üst renkli çizgi
+            var ustCizgi = new Border
+            {
+                Background = stokRenk,
+                CornerRadius = new CornerRadius(12, 12, 0, 0),
+                Opacity = 0.7
+            };
+            Grid.SetRow(ustCizgi, 0);
+
+            var pad = new Grid { Margin = new Thickness(12, 8, 12, 0) };
+            var txtAd = new TextBlock
+            {
+                Text = urun.TamAdi,
+                Foreground = (Brush)FindResource("TextPrimary"),
+                FontSize = 12,
+                FontWeight = FontWeights.SemiBold,
+                TextWrapping = TextWrapping.Wrap,
+                LineHeight = 18
+            };
+            Grid.SetRow(pad, 1);
+            pad.Children.Add(txtAd);
+
+            var txtFiyat = new TextBlock
+            {
+                Text = urun.FiyatText,
+                Foreground = (Brush)FindResource("AccentBlue"),
+                FontSize = 16,
+                FontWeight = FontWeights.Bold,
+                Margin = new Thickness(12, 0, 12, 4)
+            };
+            Grid.SetRow(txtFiyat, 2);
+
+            var stokBadge = new Border
+            {
+                Margin = new Thickness(12, 0, 12, 10),
+                Background = new SolidColorBrush(Color.FromArgb(30, 255, 255, 255)),
+                CornerRadius = new CornerRadius(6),
+                Padding = new Thickness(8, 3, 8, 3),
+                HorizontalAlignment = HorizontalAlignment.Left
+            };
+            stokBadge.Child = new TextBlock
+            {
+                Text = urun.StokText,
+                Foreground = stokRenk,
+                FontSize = 11,
+                FontWeight = FontWeights.SemiBold
+            };
+            Grid.SetRow(stokBadge, 3);
+
+            icerik.Children.Add(ustCizgi);
+            icerik.Children.Add(pad);
+            icerik.Children.Add(txtFiyat);
+            icerik.Children.Add(stokBadge);
+            border.Child = icerik;
 
             border.MouseDown  += (s, e) => SepeteEkle(urun);
-            border.MouseEnter += (s, e) => border.Background = new SolidColorBrush(Color.FromRgb(0x2F, 0x36, 0x50));
-            border.MouseLeave += (s, e) => border.Background = (Brush)FindResource("BgCard");
+            border.MouseEnter += (s, e) =>
+            {
+                border.Background = (Brush)FindResource("BgCardHover");
+                border.BorderBrush = (Brush)FindResource("AccentBlue");
+            };
+            border.MouseLeave += (s, e) =>
+            {
+                border.Background = (Brush)FindResource("BgCard");
+                border.BorderBrush = (Brush)FindResource("BorderColor");
+            };
 
             return border;
         }
@@ -174,7 +265,11 @@ namespace per10SatisWPF
                 else MessageBox.Show($"Stok yetersiz! Maksimum: {stok}", "Uyarı");
                 return;
             }
-            _sepet.Add(new SepetItem { UrunID = urun.UrunID, UrunAdi = urun.TamAdi, BirimFiyat = urun.SatisFiyati, Adet = 1 });
+            _sepet.Add(new SepetItem
+            {
+                UrunID = urun.UrunID, UrunAdi = urun.TamAdi,
+                BirimFiyat = urun.SatisFiyati, Adet = 1
+            });
             SepetYenile();
         }
 
@@ -184,7 +279,7 @@ namespace per10SatisWPF
             {
                 using var conn = new SqlConnection(_connStr);
                 conn.Open();
-                using var cmd = new SqlCommand("SELECT MevcutStok FROM Urunler WHERE UrunID = @id", conn);
+                using var cmd = new SqlCommand("SELECT MevcutStok FROM Urunler WHERE UrunID=@id", conn);
                 cmd.Parameters.AddWithValue("@id", urunID);
                 return Convert.ToInt32(cmd.ExecuteScalar());
             }
@@ -194,8 +289,19 @@ namespace per10SatisWPF
         private void SepetYenile()
         {
             pnlSepet.Children.Clear();
-            foreach (var item in _sepet)
-                pnlSepet.Children.Add(SepetSatiriOlustur(item));
+
+            bool dolu = _sepet.Count > 0;
+            bdSepetBos.Visibility = dolu ? Visibility.Collapsed : Visibility.Visible;
+            svSepet.Visibility    = dolu ? Visibility.Visible   : Visibility.Collapsed;
+            bdSepetSayisi.Visibility = dolu ? Visibility.Visible : Visibility.Collapsed;
+
+            if (dolu)
+            {
+                lblSepetSayisi.Text = _sepet.Sum(x => x.Adet).ToString();
+                foreach (var item in _sepet)
+                    pnlSepet.Children.Add(SepetSatiriOlustur(item));
+            }
+
             lblToplam.Text = $"{_sepet.Sum(x => x.ToplamFiyat):N2} ₺";
         }
 
@@ -204,25 +310,26 @@ namespace per10SatisWPF
             var border = new Border
             {
                 Background = (Brush)FindResource("BgCard"),
-                CornerRadius = new CornerRadius(8),
+                CornerRadius = new CornerRadius(10),
                 BorderBrush = (Brush)FindResource("BorderColor"),
                 BorderThickness = new Thickness(1),
-                Margin = new Thickness(0, 3, 0, 3),
-                Padding = new Thickness(10, 8, 10, 8)
+                Margin = new Thickness(0, 0, 0, 6),
+                Padding = new Thickness(12, 10, 12, 10)
             };
 
             var root = new StackPanel();
 
-            // Üst satır: ad + sil
-            var ustGrid = new Grid();
-            var txtAd = new TextBlock
+            // Üst: ad + sil
+            var ust = new Grid();
+            var ad = new TextBlock
             {
                 Text = item.UrunAdi,
-                Foreground = (Brush)FindResource("TextWhite"),
+                Foreground = (Brush)FindResource("TextPrimary"),
                 FontSize = 12, FontWeight = FontWeights.SemiBold,
-                TextWrapping = TextWrapping.Wrap, MaxWidth = 220
+                TextWrapping = TextWrapping.Wrap,
+                MaxWidth = 240, Margin = new Thickness(0, 0, 28, 0)
             };
-            var btnSil = new Button
+            var sil = new Button
             {
                 Content = "✕",
                 Background = Brushes.Transparent,
@@ -230,23 +337,42 @@ namespace per10SatisWPF
                 BorderThickness = new Thickness(0),
                 FontSize = 13, Cursor = Cursors.Hand,
                 HorizontalAlignment = HorizontalAlignment.Right,
-                Tag = item.UrunID
+                VerticalAlignment = VerticalAlignment.Top
             };
-            btnSil.Click += (s, e) =>
+            sil.Click += (s, e) => { _sepet.RemoveAll(x => x.UrunID == item.UrunID); SepetYenile(); };
+            ust.Children.Add(ad);
+            ust.Children.Add(sil);
+
+            // Barkod (küçük metin)
+            var altGrid = new Grid { Margin = new Thickness(0, 8, 0, 0) };
+
+            var adetPanel = new StackPanel { Orientation = Orientation.Horizontal };
+
+            var btnAzalt = new Button
             {
-                _sepet.RemoveAll(x => x.UrunID == item.UrunID);
-                SepetYenile();
+                Content = "−", Width = 28, Height = 28, FontSize = 15,
+                Background = (Brush)FindResource("NumpadBg"),
+                Foreground = (Brush)FindResource("TextPrimary"),
+                BorderThickness = new Thickness(0), Cursor = Cursors.Hand,
+                Template = (ControlTemplate)FindResource("SmallRoundBtnTemplate")
             };
-            ustGrid.Children.Add(txtAd);
-            ustGrid.Children.Add(btnSil);
-
-            // Alt satır: adet +/- + toplam fiyat
-            var altGrid = new Grid { Margin = new Thickness(0, 6, 0, 0) };
-            var sol = new StackPanel { Orientation = Orientation.Horizontal };
-
-            var btnAzalt = AdetBtn("−", (Brush)FindResource("NumpadBg"));
-            var txtAdet  = new TextBlock { Text = item.Adet.ToString(), Foreground = (Brush)FindResource("TextWhite"), FontSize = 14, VerticalAlignment = VerticalAlignment.Center, Margin = new Thickness(10, 0, 10, 0), MinWidth = 20, TextAlignment = TextAlignment.Center };
-            var btnArtir = AdetBtn("+", (Brush)FindResource("AccentBlue"));
+            var txtAdet = new TextBlock
+            {
+                Text = item.Adet.ToString(),
+                Foreground = (Brush)FindResource("TextPrimary"),
+                FontSize = 15, FontWeight = FontWeights.Bold,
+                VerticalAlignment = VerticalAlignment.Center,
+                Margin = new Thickness(12, 0, 12, 0),
+                MinWidth = 22, TextAlignment = TextAlignment.Center
+            };
+            var btnArtir = new Button
+            {
+                Content = "+", Width = 28, Height = 28, FontSize = 15,
+                Background = (Brush)FindResource("AccentBlue"),
+                Foreground = Brushes.White,
+                BorderThickness = new Thickness(0), Cursor = Cursors.Hand,
+                Template = (ControlTemplate)FindResource("SmallRoundBtnTemplate")
+            };
 
             btnAzalt.Click += (s, e) =>
             {
@@ -260,40 +386,33 @@ namespace per10SatisWPF
                 else MessageBox.Show($"Stok yetersiz! Maks: {stok}", "Uyarı");
             };
 
-            sol.Children.Add(btnAzalt);
-            sol.Children.Add(txtAdet);
-            sol.Children.Add(btnArtir);
+            adetPanel.Children.Add(btnAzalt);
+            adetPanel.Children.Add(txtAdet);
+            adetPanel.Children.Add(btnArtir);
 
-            var txtToplam = new TextBlock
+            var fiyat = new TextBlock
             {
                 Text = item.ToplamFiyatText,
                 Foreground = (Brush)FindResource("AccentBlue"),
-                FontSize = 13, FontWeight = FontWeights.Bold,
+                FontSize = 14, FontWeight = FontWeights.Bold,
                 HorizontalAlignment = HorizontalAlignment.Right,
                 VerticalAlignment = VerticalAlignment.Center
             };
 
-            altGrid.Children.Add(sol);
-            altGrid.Children.Add(txtToplam);
+            altGrid.Children.Add(adetPanel);
+            altGrid.Children.Add(fiyat);
 
-            root.Children.Add(ustGrid);
+            root.Children.Add(ust);
             root.Children.Add(altGrid);
             border.Child = root;
             return border;
         }
 
-        private Button AdetBtn(string icerik, Brush bg) => new Button
-        {
-            Content = icerik, Width = 26, Height = 26, FontSize = 14,
-            Background = bg, Foreground = Brushes.White,
-            BorderThickness = new Thickness(0), Cursor = Cursors.Hand,
-            Template = (ControlTemplate)FindResource("SmallRoundBtnTemplate")
-        };
-
         private void btnSepetTemizle_Click(object sender, RoutedEventArgs e)
         {
             if (_sepet.Count == 0) return;
-            if (MessageBox.Show("Sepeti temizlemek istediğinize emin misiniz?", "Onay", MessageBoxButton.YesNo) == MessageBoxResult.Yes)
+            if (MessageBox.Show("Sepeti temizlemek istediğinize emin misiniz?", "Onay",
+                MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.Yes)
             { _sepet.Clear(); SepetYenile(); }
         }
 
@@ -311,27 +430,43 @@ namespace per10SatisWPF
                 using var cmd = new SqlCommand(
                     @"SELECT u.UrunID, u.UrunAdi, m.MarkaAdi, u.SatisFiyati, u.MevcutStok, u.TurID
                       FROM Urunler u JOIN Markalar m ON u.MarkaID = m.MarkaID
-                      WHERE u.Barkod = @barkod AND u.MevcutStok > 0", conn);
-                cmd.Parameters.AddWithValue("@barkod", barkod);
+                      WHERE u.Barkod = @b AND u.MevcutStok > 0", conn);
+                cmd.Parameters.AddWithValue("@b", barkod);
                 using var r = cmd.ExecuteReader();
                 if (r.Read())
-                    SepeteEkle(new Urun { UrunID = Convert.ToInt32(r["UrunID"]), UrunAdi = r["UrunAdi"].ToString()!, MarkaAdi = r["MarkaAdi"].ToString()!, SatisFiyati = Convert.ToDecimal(r["SatisFiyati"]), MevcutStok = Convert.ToInt32(r["MevcutStok"]) });
+                    SepeteEkle(new Urun
+                    {
+                        UrunID = Convert.ToInt32(r["UrunID"]),
+                        UrunAdi = r["UrunAdi"].ToString()!,
+                        MarkaAdi = r["MarkaAdi"].ToString()!,
+                        SatisFiyati = Convert.ToDecimal(r["SatisFiyati"]),
+                        MevcutStok = Convert.ToInt32(r["MevcutStok"])
+                    });
                 else
                     MessageBox.Show($"'{barkod}' barkoduna ait ürün bulunamadı!", "Uyarı");
             }
             catch (Exception ex) { MessageBox.Show($"Barkod hatası: {ex.Message}"); }
 
             txtBarkod.Clear();
+            PlaceholderSet(txtBarkod);
         }
 
         // ─── NUMPAD ───────────────────────────────────────────────────
         private void Numpad_Click(object sender, RoutedEventArgs e)
         {
-            if (sender is Button btn) { _numpadBuffer += btn.Content; lblNumpad.Text = _numpadBuffer; }
+            if (sender is Button btn)
+            {
+                _numpadBuffer += btn.Content;
+                lblNumpad.Text = _numpadBuffer;
+            }
         }
 
         private void NumpadC_Click(object sender, RoutedEventArgs e)
-        { _numpadBuffer = ""; lblNumpad.Text = ""; }
+        {
+            if (_numpadBuffer.Length > 0)
+                _numpadBuffer = _numpadBuffer[..^1];
+            lblNumpad.Text = _numpadBuffer;
+        }
 
         // ─── ÖDEME ────────────────────────────────────────────────────
         private void btnNakit_Click(object sender, RoutedEventArgs e) => OdemeYap("Nakit");
@@ -345,30 +480,35 @@ namespace per10SatisWPF
                 using var conn = new SqlConnection(_connStr);
                 conn.Open();
 
-                var cmdSepet = new SqlCommand("INSERT INTO Sepetler (Tarih) VALUES (GETDATE()); SELECT SCOPE_IDENTITY();", conn);
+                var cmdSepet = new SqlCommand(
+                    "INSERT INTO Sepetler (Tarih) VALUES (GETDATE()); SELECT SCOPE_IDENTITY();", conn);
                 int sepetID = Convert.ToInt32(cmdSepet.ExecuteScalar());
 
                 foreach (var item in _sepet)
                 {
                     using var cmd = new SqlCommand(
-                        "INSERT INTO Satislar (UrunID, Miktar, birimalisfiyati, birimsatisfiyati, SatisTarihi, SepetID) VALUES (@id,@miktar,@alis,@satis,GETDATE(),@sepetId)", conn);
-                    cmd.Parameters.AddWithValue("@id",      item.UrunID);
-                    cmd.Parameters.AddWithValue("@miktar",  item.Adet);
-                    cmd.Parameters.AddWithValue("@alis",    20m);
-                    cmd.Parameters.AddWithValue("@satis",   item.BirimFiyat);
-                    cmd.Parameters.AddWithValue("@sepetId", sepetID);
+                        "INSERT INTO Satislar (UrunID, Miktar, birimalisfiyati, birimsatisfiyati, SatisTarihi, SepetID) " +
+                        "VALUES (@id,@miktar,@alis,@satis,GETDATE(),@sid)", conn);
+                    cmd.Parameters.AddWithValue("@id",    item.UrunID);
+                    cmd.Parameters.AddWithValue("@miktar", item.Adet);
+                    cmd.Parameters.AddWithValue("@alis",   20m);
+                    cmd.Parameters.AddWithValue("@satis",  item.BirimFiyat);
+                    cmd.Parameters.AddWithValue("@sid",    sepetID);
                     cmd.ExecuteNonQuery();
                 }
 
                 decimal toplam = _sepet.Sum(x => x.ToplamFiyat);
-                MessageBox.Show($"✅ Ödeme Başarılı!\nYöntem: {yontem}\nToplam: {toplam:N2} ₺", "Başarılı");
+                MessageBox.Show(
+                    $"✅  Ödeme Başarılı!\n\nYöntem : {yontem}\nToplam : {toplam:N2} ₺",
+                    "Başarılı", MessageBoxButton.OK, MessageBoxImage.None);
+
                 _sepet.Clear();
                 _numpadBuffer = "";
                 lblNumpad.Text = "";
                 SepetYenile();
                 UrunleriYukle(_aktifTurID);
             }
-            catch (Exception ex) { MessageBox.Show($"Ödeme hatası: {ex.Message}"); }
+            catch (Exception ex) { MessageBox.Show($"Ödeme hatası: {ex.Message}", "Hata"); }
         }
 
         // ─── ARAMA ────────────────────────────────────────────────────
@@ -382,13 +522,13 @@ namespace per10SatisWPF
         // ─── SON SATIŞ İPTAL ──────────────────────────────────────────
         private void btnSatisgeri_Click(object sender, RoutedEventArgs e)
         {
-            if (MessageBox.Show("Son satışı iptal etmek istediğinize emin misiniz?", "Onay", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
+            if (MessageBox.Show("Son satışı iptal etmek istediğinize emin misiniz?",
+                "Onay", MessageBoxButton.YesNo) != MessageBoxResult.Yes) return;
             try
             {
                 using var conn = new SqlConnection(_connStr);
                 conn.Open();
-                var cmd = new SqlCommand("SELECT MAX(SepetID) FROM Sepetler", conn);
-                object res = cmd.ExecuteScalar();
+                object res = new SqlCommand("SELECT MAX(SepetID) FROM Sepetler", conn).ExecuteScalar();
                 if (res != DBNull.Value)
                 {
                     var sp = new SqlCommand("sp_SepetIptal", conn) { CommandType = CommandType.StoredProcedure };
@@ -402,31 +542,31 @@ namespace per10SatisWPF
         }
 
         // ─── AYARLAR ──────────────────────────────────────────────────
-        private void btnAyarlar_Click(object sender, RoutedEventArgs e)
-        {
+        private void btnAyarlar_Click(object sender, RoutedEventArgs e) =>
             new AyarlarWindow().ShowDialog();
-        }
 
-        // ─── KLAVYE KISAYOLLARI ───────────────────────────────────────
+        // ─── F TUŞ KISAYOLLARI ─────────────────────────────────────────
         private void Window_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.F1) OdemeYap("Nakit");
-            else if (e.Key == Key.F4) OdemeYap("KrediKarti");
+            switch (e.Key)
+            {
+                case Key.F1: OdemeYap("Nakit");       break;
+                case Key.F4: OdemeYap("KrediKarti");  break;
+                case Key.F5: UrunleriYukle(_aktifTurID); break;
+            }
         }
 
         // ─── PLACEHOLDER ──────────────────────────────────────────────
         private void PlaceholderSet(TextBox tb)
         {
             tb.Text = tb.Tag?.ToString() ?? "";
-            tb.Foreground = (Brush)FindResource("TextGray");
+            tb.Foreground = (Brush)FindResource("TextSecondary");
         }
-
         private void Placeholder_GotFocus(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox tb && tb.Text == tb.Tag?.ToString())
-            { tb.Text = ""; tb.Foreground = (Brush)FindResource("TextWhite"); }
+            { tb.Text = ""; tb.Foreground = (Brush)FindResource("TextPrimary"); }
         }
-
         private void Placeholder_LostFocus(object sender, RoutedEventArgs e)
         {
             if (sender is TextBox tb && string.IsNullOrEmpty(tb.Text))
@@ -436,7 +576,8 @@ namespace per10SatisWPF
         // ─── KAPAT ────────────────────────────────────────────────────
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (MessageBox.Show("Programı kapatmak istiyor musunuz?", "Çıkış", MessageBoxButton.YesNo) == MessageBoxResult.No)
+            if (MessageBox.Show("Programı kapatmak istiyor musunuz?", "Çıkış",
+                MessageBoxButton.YesNo) == MessageBoxResult.No)
                 e.Cancel = true;
         }
     }
