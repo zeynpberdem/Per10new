@@ -20,15 +20,15 @@ namespace per10SatisWPF
         private readonly List<(int TurID, string Ad)> _kategoriler = new()
         {
             (0, "Tümü"),
-            (1, "Gıda"),
-            (2, "Atıştırmalık"),
-            (3, "İçecek"),
-            (4, "Kişisel Bakım"),
-            (5, "Temizlik"),
-            (6, "Ev & Yaşam"),
-            (7, "Elektronik"),
-            (8, "Giyim"),
-            (9, "Diğer"),
+            (1, "Motor Bakım"),
+            (2, "Cam Temizleyiciler"),
+            (3, "Parfümler"),
+            (4, "Jant ve Lastik Bakımı"),
+            (5, "Parlatma ve Koruma"),
+            (6, "Bezler ve Süngerler"),
+            (7, "İçecekler"),
+            (8, "Araç İç Bakım"),
+            (9, "Diğerleri"),
         };
 
         public MainWindow()
