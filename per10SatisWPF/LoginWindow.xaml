@@ -6,6 +6,10 @@
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         Background="{StaticResource BgDark}">
+    <Window.Resources>
+        <SolidColorBrush x:Key="TextWhite" Color="#EDF0F7"/>
+        <SolidColorBrush x:Key="TextGray"  Color="#6B7A99"/>
+    </Window.Resources>
 
     <Grid>
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
