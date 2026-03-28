@@ -192,7 +192,6 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
-                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- Sepet Başlığı -->
@@ -256,52 +255,28 @@
                         </Grid>
                     </Border>
 
-                    <!-- Numpad Gösterge -->
-                    <Border Grid.Row="3" Background="{StaticResource BgCard}"
-                            CornerRadius="10" Margin="12,6,12,0" Padding="14,8">
-                        <Grid>
-                            <TextBlock Text="İndirim / Miktar"
+                    <!-- İndirim Girişi -->
+                    <Border Grid.Row="3" Margin="12,6,12,0">
+                        <StackPanel>
+                            <TextBlock Text="İNDİRİM (₺)"
                                        Foreground="{StaticResource TextSecondary}"
-                                       FontSize="12" VerticalAlignment="Center"/>
-                            <TextBlock x:Name="lblNumpad" Text=""
-                                       HorizontalAlignment="Right"
-                                       Foreground="{StaticResource AccentBlue}"
-                                       FontSize="18" FontWeight="Bold"/>
-                        </Grid>
+                                       FontSize="10" FontWeight="Bold" Margin="2,0,0,5"/>
+                            <Border Background="{StaticResource BgCard}" CornerRadius="8"
+                                    BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                <TextBox x:Name="txtIndirim"
+                                         Background="Transparent"
+                                         Foreground="{StaticResource AccentBlue}"
+                                         BorderThickness="0"
+                                         Padding="12,10" FontSize="18" FontWeight="Bold"
+                                         CaretBrush="White"
+                                         TextChanged="txtIndirim_TextChanged"
+                                         Tag="0"/>
+                            </Border>
+                        </StackPanel>
                     </Border>
 
-                    <!-- Numpad -->
-                    <Grid Grid.Row="4" Margin="12,6,12,0">
-                        <Grid.RowDefinitions>
-                            <RowDefinition Height="48"/>
-                            <RowDefinition Height="48"/>
-                            <RowDefinition Height="48"/>
-                            <RowDefinition Height="48"/>
-                        </Grid.RowDefinitions>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                            <ColumnDefinition/>
-                        </Grid.ColumnDefinitions>
-
-                        <Button Grid.Row="0" Grid.Column="0" Content="7" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="0" Grid.Column="1" Content="8" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="0" Grid.Column="2" Content="9" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="1" Grid.Column="0" Content="4" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="1" Grid.Column="1" Content="5" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="1" Grid.Column="2" Content="6" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="2" Grid.Column="0" Content="1" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="2" Grid.Column="1" Content="2" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="2" Grid.Column="2" Content="3" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="3" Grid.Column="0" Content="." Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="3" Grid.Column="1" Content="0" Style="{StaticResource NumpadStyle}" Click="Numpad_Click"/>
-                        <Button Grid.Row="3" Grid.Column="2" Content="⌫"
-                                Background="{StaticResource AccentRed}"
-                                Style="{StaticResource NumpadStyle}" Click="NumpadC_Click"/>
-                    </Grid>
-
                     <!-- Ödeme Butonları -->
-                    <StackPanel Grid.Row="5" Margin="12,8,12,14">
+                    <StackPanel Grid.Row="4" Margin="12,8,12,14">
                         <Button Content="💵   Nakit Ödeme   (F1)"
                                 Background="{StaticResource AccentGreen}"
                                 Style="{StaticResource OdemeBtn}"

@@ -19,7 +19,6 @@ namespace per10SatisWPF
         private List<SepetItem> _sepet  = new();
         private List<Urun>      _urunler = new();
         private int    _aktifTurID    = 0;
-        private string _numpadBuffer  = "";
 
         private readonly List<(int TurID, string Ikon, string Ad)> _kategoriler = new()
         {
@@ -289,6 +288,13 @@ namespace per10SatisWPF
             catch { return 0; }
         }
 
+        private decimal IndirimAl()
+        {
+            if (decimal.TryParse(txtIndirim.Text, out decimal indirim) && indirim > 0)
+                return indirim;
+            return 0;
+        }
+
         private void SepetYenile()
         {
             pnlSepet.Children.Clear();
@@ -305,7 +311,8 @@ namespace per10SatisWPF
                     pnlSepet.Children.Add(SepetSatiriOlustur(item));
             }
 
-            lblToplam.Text = $"{_sepet.Sum(x => x.ToplamFiyat):N2} ₺";
+            decimal net = Math.Max(0, _sepet.Sum(x => x.ToplamFiyat) - IndirimAl());
+            lblToplam.Text = $"{net:N2} ₺";
         }
 
         private Border SepetSatiriOlustur(SepetItem item)
@@ -454,22 +461,8 @@ namespace per10SatisWPF
             PlaceholderSet(txtBarkod);
         }
 
-        // ─── NUMPAD ───────────────────────────────────────────────────
-        private void Numpad_Click(object sender, RoutedEventArgs e)
-        {
-            if (sender is Button btn)
-            {
-                _numpadBuffer += btn.Content;
-                lblNumpad.Text = _numpadBuffer;
-            }
-        }
-
-        private void NumpadC_Click(object sender, RoutedEventArgs e)
-        {
-            if (_numpadBuffer.Length > 0)
-                _numpadBuffer = _numpadBuffer.Substring(0, _numpadBuffer.Length - 1);
-            lblNumpad.Text = _numpadBuffer;
-        }
+        // ─── İNDİRİM ─────────────────────────────────────────────────
+        private void txtIndirim_TextChanged(object sender, TextChangedEventArgs e) => SepetYenile();
 
         // ─── ÖDEME ────────────────────────────────────────────────────
         private void btnNakit_Click(object sender, RoutedEventArgs e) => OdemeYap("Nakit");
@@ -500,14 +493,16 @@ namespace per10SatisWPF
                     cmd.ExecuteNonQuery();
                 }
 
-                decimal toplam = _sepet.Sum(x => x.ToplamFiyat);
+                decimal toplam    = _sepet.Sum(x => x.ToplamFiyat);
+                decimal indirim   = IndirimAl();
+                decimal net       = Math.Max(0, toplam - indirim);
+                string indirimStr = indirim > 0 ? $"\nİndirim : -{indirim:N2} ₺" : "";
                 MessageBox.Show(
-                    $"✅  Ödeme Başarılı!\n\nYöntem : {yontem}\nToplam : {toplam:N2} ₺",
+                    $"✅  Ödeme Başarılı!\n\nYöntem : {yontem}\nAra Top: {toplam:N2} ₺{indirimStr}\nToplam : {net:N2} ₺",
                     "Başarılı", MessageBoxButton.OK, MessageBoxImage.None);
 
                 _sepet.Clear();
-                _numpadBuffer = "";
-                lblNumpad.Text = "";
+                txtIndirim.Text = "";
                 SepetYenile();
                 UrunleriYukle(_aktifTurID);
             }
