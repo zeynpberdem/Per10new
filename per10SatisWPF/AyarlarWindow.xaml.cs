@@ -72,7 +72,9 @@ namespace per10SatisWPF
                              JOIN Markalar m ON u.MarkaID = m.MarkaID
                              WHERE u.TurID = @turID
                              ORDER BY m.MarkaAdi, u.UrunAdi";
-                new SqlDataAdapter(new SqlCommand(q, conn) { Parameters = { new SqlParameter("@turID", turID) } }, conn).Fill(tablo);
+                var cmd75 = new SqlCommand(q, conn);
+                cmd75.Parameters.AddWithValue("@turID", turID);
+                new SqlDataAdapter(cmd75).Fill(tablo);
             }
             catch (Exception ex) { MessageBox.Show($"Hata: {ex.Message}"); return; }
 
