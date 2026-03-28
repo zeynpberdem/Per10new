@@ -6,8 +6,8 @@
     <UseWPF>true</UseWPF>
     <RootNamespace>per10SatisWPF</RootNamespace>
     <AssemblyName>per10SatisWPF</AssemblyName>
-    <Nullable>enable</Nullable>
-    <LangVersion>8</LangVersion>
+    <Nullable>disable</Nullable>
+    <LangVersion>9</LangVersion>
   </PropertyGroup>
 
   <ItemGroup>
