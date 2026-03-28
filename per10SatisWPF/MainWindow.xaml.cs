@@ -430,7 +430,16 @@ namespace per10SatisWPF
         // ─── BARKOD ───────────────────────────────────────────────────
         private void txtBarkod_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key != Key.Enter) return;
+            if (e.Key == Key.Enter) BarkodIleAra();
+        }
+
+        private void btnOkut_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            BarkodIleAra();
+        }
+
+        private void BarkodIleAra()
+        {
             string barkod = txtBarkod.Text.Trim();
             if (barkod == (string)txtBarkod.Tag || string.IsNullOrEmpty(barkod)) return;
 
@@ -447,11 +456,11 @@ namespace per10SatisWPF
                 if (r.Read())
                     SepeteEkle(new Urun
                     {
-                        UrunID = Convert.ToInt32(r["UrunID"]),
-                        UrunAdi = r["UrunAdi"].ToString()!,
-                        MarkaAdi = r["MarkaAdi"].ToString()!,
+                        UrunID      = Convert.ToInt32(r["UrunID"]),
+                        UrunAdi     = r["UrunAdi"].ToString(),
+                        MarkaAdi    = r["MarkaAdi"].ToString(),
                         SatisFiyati = Convert.ToDecimal(r["SatisFiyati"]),
-                        MevcutStok = Convert.ToInt32(r["MevcutStok"])
+                        MevcutStok  = Convert.ToInt32(r["MevcutStok"])
                     });
                 else
                     MessageBox.Show($"'{barkod}' barkoduna ait ürün bulunamadı!", "Uyarı");

@@ -70,7 +70,8 @@
                                        HorizontalAlignment="Center" VerticalAlignment="Center"/>
                         </Border>
                         <Border DockPanel.Dock="Right" CornerRadius="0,10,10,0"
-                                Padding="14,0" Cursor="Hand">
+                                Padding="14,0" Cursor="Hand"
+                                MouseDown="btnOkut_Click">
                             <Border.Background>
                                 <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
                                     <GradientStop Color="#4A7CF6" Offset="0"/>
