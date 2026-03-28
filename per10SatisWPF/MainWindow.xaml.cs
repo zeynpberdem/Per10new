@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Windows;
@@ -14,7 +15,7 @@ namespace per10SatisWPF
 {
     public partial class MainWindow : Window
     {
-        private readonly string _connStr = @"Data Source=MertPC\SQLEXPRESS;Initial Catalog=per10Database;User ID=sa;Password=1;Encrypt=True;TrustServerCertificate=True";
+        private readonly string _connStr = ConfigurationManager.ConnectionStrings["Per10DB"].ConnectionString;
 
         private List<SepetItem> _sepet  = new();
         private List<Urun>      _urunler = new();

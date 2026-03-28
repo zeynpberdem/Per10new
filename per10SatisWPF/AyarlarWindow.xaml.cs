@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Configuration;
 using System.Data;
 using System.Linq;
 using System.Windows;
@@ -12,7 +13,7 @@ namespace per10SatisWPF
 {
     public partial class AyarlarWindow : Window
     {
-        private readonly string _connStr = @"Data Source=MertPC\SQLEXPRESS;Initial Catalog=per10Database;User ID=sa;Password=1;Encrypt=True;TrustServerCertificate=True";
+        private readonly string _connStr = ConfigurationManager.ConnectionStrings["Per10DB"].ConnectionString;
         private int _seciliUrunID = -1;
 
         private readonly List<(int TurID, string Ad)> _kategoriler = new()
