@@ -196,6 +196,7 @@
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
                     <!-- Sepet Başlığı -->
@@ -259,8 +260,42 @@
                         </Grid>
                     </Border>
 
+                    <!-- Yıkama Ekle -->
+                    <Border Grid.Row="3" Margin="12,8,12,0"
+                            Background="{StaticResource BgCard}" CornerRadius="10"
+                            BorderBrush="{StaticResource BorderColor}" BorderThickness="1"
+                            Padding="12,10">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <StackPanel Grid.Column="0" Margin="0,0,8,0">
+                                <TextBlock Text="🚿  YIKAMA GELİRİ (₺)"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           FontSize="10" FontWeight="Bold" Margin="0,0,0,5"/>
+                                <Border Background="{StaticResource BgDark}" CornerRadius="6"
+                                        BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                                    <TextBox x:Name="txtYikamaTutar"
+                                             Background="Transparent"
+                                             Foreground="{StaticResource AccentOrange}"
+                                             BorderThickness="0"
+                                             Padding="8,7" FontSize="16" FontWeight="Bold"
+                                             CaretBrush="White"/>
+                                </Border>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="+ Ekle"
+                                    VerticalAlignment="Bottom"
+                                    Height="36" Padding="14,0"
+                                    Background="{StaticResource AccentOrange}"
+                                    Foreground="White" FontSize="12" FontWeight="Bold"
+                                    Template="{StaticResource RoundBtnTemplate}"
+                                    Cursor="Hand" Click="btnYikamaEkle_Click"/>
+                        </Grid>
+                    </Border>
+
                     <!-- İndirim Girişi -->
-                    <Border Grid.Row="3" Margin="12,6,12,0">
+                    <Border Grid.Row="4" Margin="12,6,12,0">
                         <StackPanel>
                             <TextBlock Text="İNDİRİM (₺)"
                                        Foreground="{StaticResource TextSecondary}"
@@ -280,7 +315,7 @@
                     </Border>
 
                     <!-- Ödeme Butonları -->
-                    <StackPanel Grid.Row="4" Margin="12,8,12,14">
+                    <StackPanel Grid.Row="5" Margin="12,8,12,14">
                         <Button Content="💵   Nakit Ödeme   (F1)"
                                 Background="{StaticResource AccentGreen}"
                                 Style="{StaticResource OdemeBtn}"

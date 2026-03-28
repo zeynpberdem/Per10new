@@ -461,6 +461,31 @@ namespace per10SatisWPF
             PlaceholderSet(txtBarkod);
         }
 
+        // ─── YIKAMA ───────────────────────────────────────────────────
+        private void btnYikamaEkle_Click(object sender, RoutedEventArgs e)
+        {
+            string girdi = txtYikamaTutar.Text.Trim();
+            if (string.IsNullOrEmpty(girdi) || !decimal.TryParse(girdi, out decimal tutar) || tutar <= 0)
+            {
+                MessageBox.Show("Geçerli bir yıkama tutarı girin.", "Uyarı");
+                return;
+            }
+            try
+            {
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+                using var cmd = new SqlCommand(
+                    "INSERT INTO Yikamalar (Tutar, Tarih) VALUES (@tutar, GETDATE())", conn);
+                cmd.Parameters.AddWithValue("@tutar", tutar);
+                cmd.ExecuteNonQuery();
+
+                MessageBox.Show($"✅  {tutar:N2} ₺ yıkama geliri kaydedildi!", "Başarılı",
+                    MessageBoxButton.OK, MessageBoxImage.None);
+                txtYikamaTutar.Clear();
+            }
+            catch (Exception ex) { MessageBox.Show($"Kayıt hatası: {ex.Message}", "Hata"); }
+        }
+
         // ─── İNDİRİM ─────────────────────────────────────────────────
         private void txtIndirim_TextChanged(object sender, TextChangedEventArgs e) => SepetYenile();
 
