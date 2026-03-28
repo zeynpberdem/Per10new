@@ -229,8 +229,8 @@ namespace per10SatisWPF
                 using (var cmd = new SqlCommand("SatisAnalizGetir", conn)
                     { CommandType = CommandType.StoredProcedure })
                 {
-                    cmd.Parameters.AddWithValue("@baslangic", dpBaslangic.SelectedDate.Value.Date);
-                    cmd.Parameters.AddWithValue("@bitis",     dpBitis.SelectedDate.Value.Date.AddDays(1).AddSeconds(-1));
+                    cmd.Parameters.AddWithValue("@baslangic", dpBaslangic.SelectedDate.Value.Date.AddHours(8));
+                    cmd.Parameters.AddWithValue("@bitis",     dpBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3));
                     using var r = cmd.ExecuteReader();
                     if (r.Read())
                     {
@@ -249,7 +249,7 @@ namespace per10SatisWPF
                 using (var cmd2 = new SqlCommand("sp_SepetleriFiltrele", conn)
                     { CommandType = CommandType.StoredProcedure })
                 {
-                    cmd2.Parameters.AddWithValue("@Baslangic", dpBaslangic.SelectedDate.Value.Date.AddHours(6));
+                    cmd2.Parameters.AddWithValue("@Baslangic", dpBaslangic.SelectedDate.Value.Date.AddHours(8));
                     cmd2.Parameters.AddWithValue("@Bitis",     dpBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3));
                     new SqlDataAdapter(cmd2).Fill(dt);
                 }
@@ -312,8 +312,8 @@ namespace per10SatisWPF
                 conn.Open();
                 using var cmd = new SqlCommand(procedure, conn)
                     { CommandType = CommandType.StoredProcedure };
-                cmd.Parameters.AddWithValue("@basTarihi", dpGrafBaslangic.SelectedDate.Value.Date);
-                cmd.Parameters.AddWithValue("@bitTarihi", dpGrafBitis.SelectedDate.Value.Date.AddDays(1).AddSeconds(-1));
+                cmd.Parameters.AddWithValue("@basTarihi", dpGrafBaslangic.SelectedDate.Value.Date.AddHours(8));
+                cmd.Parameters.AddWithValue("@bitTarihi", dpGrafBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3));
                 using var r = cmd.ExecuteReader();
                 while (r.Read())
                 {
