@@ -5,32 +5,18 @@
     <Application.Resources>
 
         <!-- ══ RENK PALETİ ══════════════════════════════════════════ -->
-        <Color x:Key="C_BgDark"       >#12151E</Color>
-        <Color x:Key="C_BgPanel"      >#181C28</Color>
-        <Color x:Key="C_BgCard"       >#1F2436</Color>
-        <Color x:Key="C_BgCardHover"  >#252C42</Color>
-        <Color x:Key="C_Blue"         >#4A7CF6</Color>
-        <Color x:Key="C_BlueDark"     >#2D5BD4</Color>
-        <Color x:Key="C_Green"        >#27AE60</Color>
-        <Color x:Key="C_Red"          >#E74C3C</Color>
-        <Color x:Key="C_Orange"       >#F39C12</Color>
-        <Color x:Key="C_TextPrimary"  >#EDF0F7</Color>
-        <Color x:Key="C_TextSecondary">#6B7A99</Color>
-        <Color x:Key="C_Border"       >#252C42</Color>
-        <Color x:Key="C_NumpadBg"     >#1A1E2D</Color>
-
-        <SolidColorBrush x:Key="BgDark"        Color="{StaticResource C_BgDark}"/>
-        <SolidColorBrush x:Key="BgPanel"       Color="{StaticResource C_BgPanel}"/>
-        <SolidColorBrush x:Key="BgCard"        Color="{StaticResource C_BgCard}"/>
-        <SolidColorBrush x:Key="BgCardHover"   Color="{StaticResource C_BgCardHover}"/>
-        <SolidColorBrush x:Key="AccentBlue"    Color="{StaticResource C_Blue}"/>
-        <SolidColorBrush x:Key="AccentGreen"   Color="{StaticResource C_Green}"/>
-        <SolidColorBrush x:Key="AccentRed"     Color="{StaticResource C_Red}"/>
-        <SolidColorBrush x:Key="AccentOrange"  Color="{StaticResource C_Orange}"/>
-        <SolidColorBrush x:Key="TextPrimary"   Color="{StaticResource C_TextPrimary}"/>
-        <SolidColorBrush x:Key="TextSecondary" Color="{StaticResource C_TextSecondary}"/>
-        <SolidColorBrush x:Key="BorderColor"   Color="{StaticResource C_Border}"/>
-        <SolidColorBrush x:Key="NumpadBg"      Color="{StaticResource C_NumpadBg}"/>
+        <SolidColorBrush x:Key="BgDark"        Color="#12151E"/>
+        <SolidColorBrush x:Key="BgPanel"       Color="#181C28"/>
+        <SolidColorBrush x:Key="BgCard"        Color="#1F2436"/>
+        <SolidColorBrush x:Key="BgCardHover"   Color="#252C42"/>
+        <SolidColorBrush x:Key="AccentBlue"    Color="#4A7CF6"/>
+        <SolidColorBrush x:Key="AccentGreen"   Color="#27AE60"/>
+        <SolidColorBrush x:Key="AccentRed"     Color="#E74C3C"/>
+        <SolidColorBrush x:Key="AccentOrange"  Color="#F39C12"/>
+        <SolidColorBrush x:Key="TextPrimary"   Color="#EDF0F7"/>
+        <SolidColorBrush x:Key="TextSecondary" Color="#6B7A99"/>
+        <SolidColorBrush x:Key="BorderColor"   Color="#252C42"/>
+        <SolidColorBrush x:Key="NumpadBg"      Color="#1A1E2D"/>
 
         <!-- ══ KONTROL ŞABLONLARı ═══════════════════════════════════ -->
 
