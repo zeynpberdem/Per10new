@@ -140,7 +140,7 @@
                     <TextBlock DockPanel.Dock="Top" Text="KATEGORİLER"
                                Foreground="{StaticResource TextSecondary}"
                                FontSize="10" FontWeight="Bold"
-                               Margin="6,0,0,10" LetterSpacing="2"/>
+                               Margin="6,0,0,10"/>
 
                     <!-- Butonlar -->
                     <ScrollViewer VerticalScrollBarVisibility="Auto">
