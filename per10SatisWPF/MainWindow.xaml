@@ -284,6 +284,7 @@
                                 <Border Background="{StaticResource BgDark}" CornerRadius="6"
                                         BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
                                     <TextBox x:Name="txtYikamaTutar"
+                                             KeyDown="txtYikamaTutar_KeyDown"
                                              Background="Transparent"
                                              Foreground="{StaticResource AccentOrange}"
                                              BorderThickness="0"

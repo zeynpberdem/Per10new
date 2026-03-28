@@ -482,6 +482,11 @@ namespace per10SatisWPF
             txtBarkod.Focus();
         }
 
+        private void txtYikamaTutar_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) btnYikamaEkle_Click(sender, e);
+        }
+
         // ─── YIKAMA ───────────────────────────────────────────────────
         private void btnYikamaEkle_Click(object sender, RoutedEventArgs e)
         {
