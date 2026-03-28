@@ -488,6 +488,96 @@
                 </Grid>
             </TabItem>
 
+            <!-- ═══ TAB 5: YIKAMA RAPORU ════════════════════════════════ -->
+            <TabItem Header="🚿  Yıkama Raporu" Style="{StaticResource DarkTab}">
+                <Grid Margin="20">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+
+                    <!-- Filtre -->
+                    <Border Grid.Row="0" Background="{StaticResource BgPanel}"
+                            CornerRadius="12" Padding="20,16" Margin="0,0,0,16">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Başlangıç:" Foreground="{StaticResource TextSecondary}"
+                                       FontSize="13" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <DatePicker x:Name="dpYikamaBaslangic" Width="150" Margin="0,0,20,0"
+                                        Background="{StaticResource BgCard}" FontSize="13"/>
+                            <TextBlock Text="Bitiş:" Foreground="{StaticResource TextSecondary}"
+                                       FontSize="13" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <DatePicker x:Name="dpYikamaBitis" Width="150" Margin="0,0,20,0"
+                                        Background="{StaticResource BgCard}" FontSize="13"/>
+                            <Button Content="🔍  Rapor Getir" Height="38" Padding="20,0"
+                                    Background="{StaticResource AccentOrange}" Foreground="White"
+                                    FontSize="13" FontWeight="Bold"
+                                    Template="{StaticResource RoundBtnTemplate}"
+                                    Cursor="Hand" Click="btnYikamaRaporGetir_Click"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Özet Kart -->
+                    <Grid Grid.Row="1" Margin="0,0,0,16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                            <ColumnDefinition/>
+                        </Grid.ColumnDefinitions>
+
+                        <Border Grid.Column="0" Background="{StaticResource BgPanel}"
+                                CornerRadius="12" Padding="20" Margin="0,0,8,0">
+                            <StackPanel>
+                                <TextBlock Text="🚿  TOPLAM YIKAMA GELİRİ"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           FontSize="11" FontWeight="Bold"/>
+                                <TextBlock x:Name="lblYikamaToplam" Text="—"
+                                           Foreground="{StaticResource AccentOrange}"
+                                           FontSize="26" FontWeight="Bold" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="1" Background="{StaticResource BgPanel}"
+                                CornerRadius="12" Padding="20" Margin="8,0">
+                            <StackPanel>
+                                <TextBlock Text="🔢  TOPLAM YIKAMA SAYISI"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           FontSize="11" FontWeight="Bold"/>
+                                <TextBlock x:Name="lblYikamaSayisi" Text="—"
+                                           Foreground="{StaticResource AccentBlue}"
+                                           FontSize="26" FontWeight="Bold" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Grid.Column="2" Background="{StaticResource BgPanel}"
+                                CornerRadius="12" Padding="20" Margin="8,0,0,0">
+                            <StackPanel>
+                                <TextBlock Text="📊  ORTALAMA YIKAMA"
+                                           Foreground="{StaticResource TextSecondary}"
+                                           FontSize="11" FontWeight="Bold"/>
+                                <TextBlock x:Name="lblYikamaOrtalama" Text="—"
+                                           Foreground="{StaticResource AccentGreen}"
+                                           FontSize="26" FontWeight="Bold" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+
+                    <!-- Liste -->
+                    <Border Grid.Row="2" CornerRadius="10" ClipToBounds="True"
+                            BorderBrush="{StaticResource BorderColor}" BorderThickness="1">
+                        <DataGrid x:Name="dgYikamalar" AutoGenerateColumns="False"
+                                  IsReadOnly="True" CanUserReorderColumns="False"
+                                  CanUserResizeRows="False">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="#"       Binding="{Binding YikamaID}"  Width="60"/>
+                                <DataGridTextColumn Header="Tutar"   Binding="{Binding Tutar}"      Width="130"/>
+                                <DataGridTextColumn Header="Tarih"   Binding="{Binding Tarih}"      Width="*"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Border>
+                </Grid>
+            </TabItem>
+
         </TabControl>
     </Grid>
 </Window>

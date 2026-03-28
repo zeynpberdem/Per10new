@@ -36,10 +36,12 @@ namespace per10SatisWPF
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
             // Tarih varsayılanları
-            dpBaslangic.SelectedDate    = DateTime.Today.AddDays(-30);
-            dpBitis.SelectedDate        = DateTime.Today;
+            dpBaslangic.SelectedDate     = DateTime.Today.AddDays(-30);
+            dpBitis.SelectedDate         = DateTime.Today;
             dpGrafBaslangic.SelectedDate = DateTime.Today.AddDays(-30);
-            dpGrafBitis.SelectedDate    = DateTime.Today;
+            dpGrafBitis.SelectedDate     = DateTime.Today;
+            dpYikamaBaslangic.SelectedDate = DateTime.Today.AddDays(-30);
+            dpYikamaBitis.SelectedDate     = DateTime.Today;
 
             // ComboBox doldur
             foreach (var (turID, ad) in _kategoriler)
@@ -290,6 +292,52 @@ namespace per10SatisWPF
                 }).ToList();
             }
             catch { }
+        }
+
+        // ─── YIKAMA RAPORU ────────────────────────────────────────────
+        private void btnYikamaRaporGetir_Click(object sender, RoutedEventArgs e)
+        {
+            if (dpYikamaBaslangic.SelectedDate == null || dpYikamaBitis.SelectedDate == null) return;
+
+            DateTime bas  = dpYikamaBaslangic.SelectedDate.Value.Date.AddHours(8);
+            DateTime bitis = dpYikamaBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3);
+
+            try
+            {
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+
+                var dt = new DataTable();
+                using var cmd = new SqlCommand(
+                    "SELECT YikamaID, Tutar, Tarih FROM Yikamalar WHERE Tarih >= @bas AND Tarih <= @bitis ORDER BY Tarih DESC", conn);
+                cmd.Parameters.AddWithValue("@bas",   bas);
+                cmd.Parameters.AddWithValue("@bitis", bitis);
+                new SqlDataAdapter(cmd).Fill(dt);
+
+                var liste = dt.AsEnumerable().Select(r => new
+                {
+                    YikamaID = r.Field<int>("YikamaID"),
+                    Tutar    = $"{r.Field<decimal>("Tutar"):N2} ₺",
+                    Tarih    = r.Field<DateTime>("Tarih").ToString("dd.MM.yyyy HH:mm")
+                }).ToList();
+
+                dgYikamalar.ItemsSource = liste;
+
+                if (liste.Count > 0)
+                {
+                    decimal toplam = dt.AsEnumerable().Sum(r => r.Field<decimal>("Tutar"));
+                    lblYikamaToplam.Text   = $"{toplam:N2} ₺";
+                    lblYikamaSayisi.Text   = $"{liste.Count} adet";
+                    lblYikamaOrtalama.Text = $"{toplam / liste.Count:N2} ₺";
+                }
+                else
+                {
+                    lblYikamaToplam.Text   = "0,00 ₺";
+                    lblYikamaSayisi.Text   = "0 adet";
+                    lblYikamaOrtalama.Text = "—";
+                }
+            }
+            catch (Exception ex) { MessageBox.Show($"Yıkama raporu hatası: {ex.Message}"); }
         }
 
         // ─── GRAFİKLER ────────────────────────────────────────────────
