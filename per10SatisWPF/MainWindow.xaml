@@ -81,13 +81,19 @@
                             <TextBlock Text="OKUT" FontSize="11" FontWeight="Bold"
                                        Foreground="White" VerticalAlignment="Center"/>
                         </Border>
-                        <TextBox x:Name="txtBarkod" Background="Transparent"
-                                 Foreground="{StaticResource TextPrimary}" BorderThickness="0"
-                                 Padding="4,10" FontSize="13" CaretBrush="White"
-                                 KeyDown="txtBarkod_KeyDown"
-                                 GotFocus="Placeholder_GotFocus"
-                                 LostFocus="Placeholder_LostFocus"
-                                 Tag="Barkod okut veya numarayı yaz..."/>
+                        <Grid>
+                            <TextBlock x:Name="txtBarkodHint"
+                                       Text="Barkod okut veya numarayı yaz..."
+                                       Foreground="{StaticResource TextSecondary}"
+                                       FontSize="13" Padding="4,10"
+                                       VerticalAlignment="Center"
+                                       IsHitTestVisible="False"/>
+                            <TextBox x:Name="txtBarkod" Background="Transparent"
+                                     Foreground="{StaticResource TextPrimary}" BorderThickness="0"
+                                     Padding="4,10" FontSize="13" CaretBrush="White"
+                                     KeyDown="txtBarkod_KeyDown"
+                                     TextChanged="txtBarkod_TextChanged"/>
+                        </Grid>
                     </DockPanel>
                 </Border>
 

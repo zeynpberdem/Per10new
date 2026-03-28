@@ -17,9 +17,11 @@ namespace per10SatisWPF
     {
         private readonly string _connStr = ConfigurationManager.ConnectionStrings["Per10DB"].ConnectionString;
 
-        private List<SepetItem> _sepet  = new();
+        private List<SepetItem> _sepet   = new();
         private List<Urun>      _urunler = new();
-        private int    _aktifTurID    = 0;
+        private int    _aktifTurID = 0;
+        private readonly DispatcherTimer _barkodTimer = new DispatcherTimer
+            { Interval = TimeSpan.FromMilliseconds(200) };
 
         private readonly List<(int TurID, string Ikon, string Ad)> _kategoriler = new()
         {
@@ -38,12 +40,12 @@ namespace per10SatisWPF
         public MainWindow()
         {
             InitializeComponent();
+            _barkodTimer.Tick += (s, e) => { _barkodTimer.Stop(); BarkodIleAra(); };
             Loaded += (s, e) =>
             {
                 SaatBaslat();
                 KategorileriYukle();
                 UrunleriYukle(0);
-                PlaceholderSet(txtBarkod);
                 PlaceholderSet(txtArama);
             };
         }
@@ -428,13 +430,22 @@ namespace per10SatisWPF
         }
 
         // ─── BARKOD ───────────────────────────────────────────────────
+        private void txtBarkod_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            bool bos = string.IsNullOrEmpty(txtBarkod.Text);
+            txtBarkodHint.Visibility = bos ? Visibility.Visible : Visibility.Collapsed;
+            _barkodTimer.Stop();
+            if (!bos) _barkodTimer.Start();
+        }
+
         private void txtBarkod_KeyDown(object sender, KeyEventArgs e)
         {
-            if (e.Key == Key.Enter) BarkodIleAra();
+            if (e.Key == Key.Enter) { _barkodTimer.Stop(); BarkodIleAra(); }
         }
 
         private void btnOkut_Click(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
+            _barkodTimer.Stop();
             BarkodIleAra();
         }
 
@@ -468,7 +479,6 @@ namespace per10SatisWPF
             catch (Exception ex) { MessageBox.Show($"Barkod hatası: {ex.Message}"); }
 
             txtBarkod.Clear();
-            PlaceholderSet(txtBarkod);
         }
 
         // ─── YIKAMA ───────────────────────────────────────────────────
