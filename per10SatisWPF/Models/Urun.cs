@@ -8,7 +8,7 @@ namespace per10SatisWPF.Models
         public decimal SatisFiyati { get; set; }
         public int MevcutStok { get; set; }
         public int TurID { get; set; }
-        public string? Barkod { get; set; }
+        public string Barkod { get; set; }
 
         public decimal AlisFiyati { get; set; }
 

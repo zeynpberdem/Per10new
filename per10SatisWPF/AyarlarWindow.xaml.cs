@@ -232,9 +232,11 @@ namespace per10SatisWPF
                     using var r = cmd.ExecuteReader();
                     if (r.Read())
                     {
-                        lblCiro.Text  = $"{r.Field<decimal>("ToplamCiro"):N2} ₺";
-                        lblKar.Text   = $"{r.Field<decimal>("ToplamKar"):N2} ₺";
-                        lblKar.Foreground = r.Field<decimal>("ToplamKar") >= 0
+                        decimal ciro = Convert.ToDecimal(r["ToplamCiro"]);
+                        decimal kar  = Convert.ToDecimal(r["ToplamKar"]);
+                        lblCiro.Text  = $"{ciro:N2} ₺";
+                        lblKar.Text   = $"{kar:N2} ₺";
+                        lblKar.Foreground = kar >= 0
                             ? (Brush)FindResource("AccentGreen")
                             : (Brush)FindResource("AccentRed");
                     }
@@ -366,7 +368,7 @@ namespace per10SatisWPF
                 var txtAd = new TextBlock
                 {
                     Text       = veriler[i].Ad.Length > 12
-                        ? veriler[i].Ad[..12] + "…"
+                        ? veriler[i].Ad.Substring(0, 12) + "..."
                         : veriler[i].Ad,
                     Foreground = new SolidColorBrush(Color.FromRgb(0x6B, 0x7A, 0x99)),
                     FontSize   = 10, Width = barGenislik + aralik,

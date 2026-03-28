@@ -113,7 +113,7 @@ namespace per10SatisWPF
         }
 
         // ─── ÜRÜNLER ──────────────────────────────────────────────────
-        private void UrunleriYukle(int turID, string? arama = null)
+        private void UrunleriYukle(int turID, string arama = null)
         {
             _urunler.Clear();
             pnlUrunler.Children.Clear();
@@ -467,7 +467,7 @@ namespace per10SatisWPF
         private void NumpadC_Click(object sender, RoutedEventArgs e)
         {
             if (_numpadBuffer.Length > 0)
-                _numpadBuffer = _numpadBuffer[..^1];
+                _numpadBuffer = _numpadBuffer.Substring(0, _numpadBuffer.Length - 1);
             lblNumpad.Text = _numpadBuffer;
         }
 
