@@ -479,6 +479,7 @@ namespace per10SatisWPF
             catch (Exception ex) { MessageBox.Show($"Barkod hatası: {ex.Message}"); }
 
             txtBarkod.Clear();
+            txtBarkod.Focus();
         }
 
         // ─── YIKAMA ───────────────────────────────────────────────────
