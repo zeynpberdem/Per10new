@@ -253,6 +253,37 @@
                                           BorderThickness="0" Padding="10,8" FontSize="13"/>
                             </Border>
 
+                            <!-- Yeni Marka Ekleme Alanı -->
+                            <Border Background="#1A1E2D" CornerRadius="8"
+                                    BorderBrush="{StaticResource BorderColor}" BorderThickness="1"
+                                    Padding="12" Margin="0,0,0,14">
+                                <StackPanel>
+                                    <TextBlock Text="YENİ MARKA EKLE"
+                                               Foreground="{StaticResource TextSecondary}"
+                                               FontSize="10" FontWeight="Bold" Margin="0,0,0,8"/>
+                                    <Grid>
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="*"/>
+                                            <ColumnDefinition Width="Auto"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Border Grid.Column="0" Style="{StaticResource InputBorder}" Margin="0,0,8,0">
+                                            <TextBox x:Name="txtYeniMarka" Style="{StaticResource InputBox}"
+                                                     ToolTip="Yeni marka adını yazın"/>
+                                        </Border>
+                                        <Button Grid.Column="1" Content="+ Ekle" Height="38" Padding="14,0"
+                                                Background="{StaticResource AccentBlue}" Foreground="White"
+                                                FontSize="12" FontWeight="Bold"
+                                                Template="{StaticResource RoundBtnTemplate}"
+                                                Cursor="Hand" Click="btnYeniMarkaEkle_Click"/>
+                                    </Grid>
+                                    <Border x:Name="bdMarkaMesaj" Background="#1A3A1A" CornerRadius="6"
+                                            Padding="10,6" Margin="0,4,0,0" Visibility="Collapsed">
+                                        <TextBlock x:Name="lblMarkaMesaj" Foreground="{StaticResource AccentGreen}"
+                                                   FontSize="11" TextWrapping="Wrap"/>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+
                             <TextBlock Text="Barkod (opsiyonel)" Style="{StaticResource InputLabel}"/>
                             <Border Style="{StaticResource InputBorder}">
                                 <TextBox x:Name="txtYeniBarkod" Style="{StaticResource InputBox}"/>

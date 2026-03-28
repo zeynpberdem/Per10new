@@ -316,7 +316,11 @@ namespace per10SatisWPF
                 cmd.Parameters.AddWithValue("@bitTarihi", dpGrafBitis.SelectedDate.Value.Date.AddDays(1).AddSeconds(-1));
                 using var r = cmd.ExecuteReader();
                 while (r.Read())
-                    veriler.Add((r[0].ToString()!, Convert.ToDouble(r[degerKolonu])));
+                {
+                    // Kolon adı yerine indeks kullan — SP kolon adına bağımlı değil
+                    double deger = r.FieldCount > 1 ? Convert.ToDouble(r[1]) : 0;
+                    veriler.Add((r[0].ToString(), deger));
+                }
             }
             catch (Exception ex) { MessageBox.Show($"Grafik hatası: {ex.Message}"); return; }
 
@@ -381,6 +385,40 @@ namespace per10SatisWPF
                 Canvas.SetTop(txtAd,  maxYukseklik + 28);
                 cnvGrafik.Children.Add(txtAd);
             }
+        }
+
+        // ─── YENİ MARKA ───────────────────────────────────────────────
+        private void btnYeniMarkaEkle_Click(object sender, RoutedEventArgs e)
+        {
+            string markaAdi = txtYeniMarka.Text.Trim();
+            if (string.IsNullOrEmpty(markaAdi))
+            {
+                MessageBox.Show("Marka adı boş olamaz.", "Uyarı");
+                return;
+            }
+            try
+            {
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+                using var cmd = new SqlCommand(
+                    "IF NOT EXISTS (SELECT 1 FROM Markalar WHERE MarkaAdi=@ad) " +
+                    "INSERT INTO Markalar (MarkaAdi) VALUES (@ad)", conn);
+                cmd.Parameters.AddWithValue("@ad", markaAdi);
+                int etkilenen = cmd.ExecuteNonQuery();
+                if (etkilenen == 0)
+                    MessageBox.Show($"'{markaAdi}' markası zaten mevcut.", "Bilgi");
+                else
+                {
+                    GosterMesaj(bdMarkaMesaj, lblMarkaMesaj, $"✅ '{markaAdi}' markası eklendi!");
+                    txtYeniMarka.Clear();
+                    MarkalariYukle();
+                    // Yeni eklenen markayı seç
+                    foreach (System.Data.DataRowView item in cmbYeniMarka.Items)
+                        if (item["MarkaAdi"].ToString() == markaAdi)
+                        { cmbYeniMarka.SelectedItem = item; break; }
+                }
+            }
+            catch (Exception ex) { MessageBox.Show($"Marka eklenemedi: {ex.Message}"); }
         }
 
         // ─── YARDIMCI ─────────────────────────────────────────────────
