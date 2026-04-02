@@ -1952,11 +1952,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\lenovo\\Downloads\\Per10new-main\\Per10new-main\\per10SatisWPF\\per10SatisWPF.csproj",
+      "projectUniqueName": "C:\\Users\\lenovo\\Downloads\\Per10new-main (1)\\Per10new-main\\per10SatisWPF\\per10SatisWPF.csproj",
       "projectName": "per10SatisWPF",
-      "projectPath": "C:\\Users\\lenovo\\Downloads\\Per10new-main\\Per10new-main\\per10SatisWPF\\per10SatisWPF.csproj",
+      "projectPath": "C:\\Users\\lenovo\\Downloads\\Per10new-main (1)\\Per10new-main\\per10SatisWPF\\per10SatisWPF.csproj",
       "packagesPath": "C:\\Users\\lenovo\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\lenovo\\Downloads\\Per10new-main\\Per10new-main\\per10SatisWPF\\obj\\",
+      "outputPath": "C:\\Users\\lenovo\\Downloads\\Per10new-main (1)\\Per10new-main\\per10SatisWPF\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
