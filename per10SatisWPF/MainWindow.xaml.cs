@@ -245,6 +245,19 @@ namespace per10SatisWPF
             icerik.Children.Add(stokBadge);
             border.Child = icerik;
 
+            if (urun.DusukStok || urun.MevcutStok == 0)
+            {
+                border.BorderBrush = (Brush)FindResource("AccentRed");
+                border.BorderThickness = new Thickness(1.5);
+                border.Effect = new System.Windows.Media.Effects.DropShadowEffect
+                {
+                    Color       = Color.FromRgb(0xE7, 0x4C, 0x3C),
+                    BlurRadius  = 18,
+                    ShadowDepth = 0,
+                    Opacity     = 0.9
+                };
+            }
+
             border.MouseDown  += (s, e) => SepeteEkle(urun);
             border.MouseEnter += (s, e) =>
             {
