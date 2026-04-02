@@ -25,9 +25,10 @@ namespace per10SatisWPF
         {
             if (txtKullanici.Text == _kullanici && txtSifre.Password == _sifre)
             {
+                Hide();
                 var main = new MainWindow();
                 main.Show();
-                this.Close();
+                Close();
             }
             else
             {
