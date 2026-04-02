@@ -5,7 +5,8 @@
         Height="480" Width="400"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
-        Background="{StaticResource BgDark}">
+        Background="{StaticResource BgDark}"
+        Icon="favicon.ico">
     <Window.Resources>
         <SolidColorBrush x:Key="TextWhite" Color="#EDF0F7"/>
         <SolidColorBrush x:Key="TextGray"  Color="#6B7A99"/>
@@ -15,10 +16,11 @@
         <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" Width="300">
 
             <!-- Logo -->
-            <Border Background="{StaticResource AccentBlue}" CornerRadius="40"
+            <Border CornerRadius="40"
                     Width="72" Height="72" HorizontalAlignment="Center" Margin="0,0,0,16">
-                <TextBlock Text="P10" FontSize="26" FontWeight="Bold"
-                           Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                <Border.Background>
+                    <ImageBrush ImageSource="/429133874_1148074973270485_3369770598999947412_n.jpg" Stretch="UniformToFill"/>
+                </Border.Background>
             </Border>
 
             <!-- Başlık -->
@@ -52,7 +54,7 @@
 
             <!-- Giriş Butonu -->
             <Button x:Name="btnGiris" Content="Giriş Yap"
-                    Background="{StaticResource AccentBlue}" Foreground="White"
+                    Background="{DynamicResource AccentGreen}" Foreground="White"
                     FontSize="15" FontWeight="Bold" Height="44"
                     Template="{StaticResource RoundBtnTemplate}"
                     Cursor="Hand" Click="btnGiris_Click"/>

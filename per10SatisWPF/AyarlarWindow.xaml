@@ -5,7 +5,8 @@
         Height="720" Width="1100"
         WindowStartupLocation="CenterOwner"
         Background="{StaticResource BgDark}"
-        Loaded="Window_Loaded">
+        Loaded="Window_Loaded"
+        Icon="favicon.ico">
 
     <Window.Resources>
         <!-- Tab Item Stili -->

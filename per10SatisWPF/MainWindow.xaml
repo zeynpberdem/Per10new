@@ -7,9 +7,15 @@
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BgDark}"
         Closing="Window_Closing"
-        KeyDown="Window_KeyDown">
+        KeyDown="Window_KeyDown"
+        Icon="favicon.ico">
 
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="10*"/>
+            <ColumnDefinition Width="351*"/>
+            <ColumnDefinition Width="1039*"/>
+        </Grid.ColumnDefinitions>
         <Grid.RowDefinitions>
             <RowDefinition Height="62"/>
             <RowDefinition Height="*"/>
@@ -20,7 +26,7 @@
              ÜST BAR
         ═══════════════════════════════════════════════════════════ -->
         <Border Grid.Row="0" Background="{StaticResource BgPanel}"
-                BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1">
+                BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1" Grid.ColumnSpan="3">
             <Grid Margin="20,0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>
@@ -32,13 +38,13 @@
                 <StackPanel Grid.Column="0" Orientation="Horizontal" VerticalAlignment="Center">
                     <Border Width="38" Height="38" CornerRadius="10" Margin="0,0,12,0">
                         <Border.Background>
-                            <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
-                                <GradientStop Color="#4A7CF6" Offset="0"/>
-                                <GradientStop Color="#2D5BD4" Offset="1"/>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="Black"/>
+                                <GradientStop Color="#FF89780E" Offset="1"/>
                             </LinearGradientBrush>
                         </Border.Background>
-                        <TextBlock Text="P" FontSize="20" FontWeight="Black"
-                                   Foreground="White" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                        <TextBlock Text="Per10" FontSize="12" FontWeight="Black"
+                                   Foreground="#FFFFDD00" HorizontalAlignment="Center" VerticalAlignment="Center" FontFamily="Bodoni MT"/>
                     </Border>
                     <StackPanel VerticalAlignment="Center">
                         <TextBlock Text="Per10 Oto Bakım" FontSize="15" FontWeight="Bold"
@@ -49,7 +55,7 @@
                     <Border Background="#1A2540" CornerRadius="6"
                             Margin="16,0,0,0" Padding="10,4">
                         <TextBlock Text="● Canlı" FontSize="11"
-                                   Foreground="#4A7CF6" VerticalAlignment="Center"/>
+                                   Foreground="#FF65F64A" VerticalAlignment="Center"/>
                     </Border>
                 </StackPanel>
 
@@ -118,7 +124,7 @@
         <!-- ══════════════════════════════════════════════════════════
              ANA ALAN
         ═══════════════════════════════════════════════════════════ -->
-        <Grid Grid.Row="1">
+        <Grid Grid.Row="1" Grid.ColumnSpan="3">
             <Grid.ColumnDefinitions>
                 <ColumnDefinition Width="190"/>
                 <ColumnDefinition Width="*"/>
@@ -162,6 +168,10 @@
 
             <!-- ── ORTA: ÜRÜNLER ─────────────────────────────────── -->
             <Grid Grid.Column="1" Background="{StaticResource BgDark}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="118*"/>
+                    <ColumnDefinition Width="307*"/>
+                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="Auto"/>
                     <RowDefinition Height="*"/>
@@ -170,7 +180,7 @@
                 <!-- Ürünler başlık bar -->
                 <Border Grid.Row="0" Background="{StaticResource BgPanel}"
                         BorderBrush="{StaticResource BorderColor}" BorderThickness="0,0,0,1"
-                        Padding="16,10">
+                        Padding="16,10" Grid.ColumnSpan="2" Margin="0,0,0,643" Grid.RowSpan="2">
                     <Grid>
                         <StackPanel Orientation="Horizontal">
                             <TextBlock x:Name="lblKategoriBaslik"
@@ -188,7 +198,7 @@
 
                 <!-- Ürün kartları -->
                 <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto"
-                              HorizontalScrollBarVisibility="Disabled">
+                              HorizontalScrollBarVisibility="Disabled" Grid.ColumnSpan="2">
                     <WrapPanel x:Name="pnlUrunler" Margin="12"/>
                 </ScrollViewer>
             </Grid>
@@ -340,8 +350,8 @@
         <!-- ══════════════════════════════════════════════════════════
              ALT STATUS BAR
         ═══════════════════════════════════════════════════════════ -->
-        <Border Grid.Row="2" Background="{StaticResource BgPanel}"
-                BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,0">
+        <Border Grid.Row="1" Background="{StaticResource BgPanel}"
+                BorderBrush="{StaticResource BorderColor}" BorderThickness="0,1,0,0" Grid.ColumnSpan="3" Margin="0,686,0,0" Grid.RowSpan="2">
             <Grid Margin="16,0">
                 <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
                     <Ellipse Width="7" Height="7" Fill="{StaticResource AccentGreen}" Margin="0,0,7,0"/>
