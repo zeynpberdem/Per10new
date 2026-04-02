@@ -1,6 +1,6 @@
 # Per10 Oto Bakım — Satış Otomasyonu
 
-Modern, dark-theme WPF tabanlı POS (Satış Noktası) uygulaması. Per10 Oto Bakım dükkanı için geliştirilmiştir.
+Modern, dark-theme WPF tabanlı Stok Yönetimi Ve Rapor uygulaması. Per10 Oto Bakım dükkanı için geliştirilmiştir.
 
 ## Özellikler
 
