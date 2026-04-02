@@ -120,7 +120,7 @@ namespace per10SatisWPF
             _urunler.Clear();
             pnlUrunler.Children.Clear();
 
-            string query = @"SELECT u.UrunID, u.UrunAdi, m.MarkaAdi, u.SatisFiyati, u.MevcutStok, u.TurID
+            string query = @"SELECT u.UrunID, u.UrunAdi, m.MarkaAdi, u.AlisFiyati, u.SatisFiyati, u.MevcutStok, u.TurID
                              FROM Urunler u
                              JOIN Markalar m ON u.MarkaID = m.MarkaID
                              WHERE u.MevcutStok > 0";
@@ -143,8 +143,9 @@ namespace per10SatisWPF
                     var urun = new Urun
                     {
                         UrunID      = Convert.ToInt32(r["UrunID"]),
-                        UrunAdi     = r["UrunAdi"].ToString()!,
-                        MarkaAdi    = r["MarkaAdi"].ToString()!,
+                        UrunAdi     = r["UrunAdi"].ToString(),
+                        MarkaAdi    = r["MarkaAdi"].ToString(),
+                        AlisFiyati  = Convert.ToDecimal(r["AlisFiyati"]),
                         SatisFiyati = Convert.ToDecimal(r["SatisFiyati"]),
                         MevcutStok  = Convert.ToInt32(r["MevcutStok"]),
                         TurID       = Convert.ToInt32(r["TurID"])
@@ -272,8 +273,11 @@ namespace per10SatisWPF
             }
             _sepet.Add(new SepetItem
             {
-                UrunID = urun.UrunID, UrunAdi = urun.TamAdi,
-                BirimFiyat = urun.SatisFiyati, Adet = 1
+                UrunID     = urun.UrunID,
+                UrunAdi    = urun.TamAdi,
+                AlisFiyati = urun.AlisFiyati,
+                BirimFiyat = urun.SatisFiyati,
+                Adet       = 1
             });
             SepetYenile();
         }
@@ -459,7 +463,7 @@ namespace per10SatisWPF
                 using var conn = new SqlConnection(_connStr);
                 conn.Open();
                 using var cmd = new SqlCommand(
-                    @"SELECT u.UrunID, u.UrunAdi, m.MarkaAdi, u.SatisFiyati, u.MevcutStok, u.TurID
+                    @"SELECT u.UrunID, u.UrunAdi, m.MarkaAdi, u.AlisFiyati, u.SatisFiyati, u.MevcutStok, u.TurID
                       FROM Urunler u JOIN Markalar m ON u.MarkaID = m.MarkaID
                       WHERE u.Barkod = @b AND u.MevcutStok > 0", conn);
                 cmd.Parameters.AddWithValue("@b", barkod);
@@ -470,6 +474,7 @@ namespace per10SatisWPF
                         UrunID      = Convert.ToInt32(r["UrunID"]),
                         UrunAdi     = r["UrunAdi"].ToString(),
                         MarkaAdi    = r["MarkaAdi"].ToString(),
+                        AlisFiyati  = Convert.ToDecimal(r["AlisFiyati"]),
                         SatisFiyati = Convert.ToDecimal(r["SatisFiyati"]),
                         MevcutStok  = Convert.ToInt32(r["MevcutStok"])
                     });
@@ -538,7 +543,7 @@ namespace per10SatisWPF
                         "VALUES (@id,@miktar,@alis,@satis,GETDATE(),@sid)", conn);
                     cmd.Parameters.AddWithValue("@id",    item.UrunID);
                     cmd.Parameters.AddWithValue("@miktar", item.Adet);
-                    cmd.Parameters.AddWithValue("@alis",   20m);
+                    cmd.Parameters.AddWithValue("@alis",   item.AlisFiyati);
                     cmd.Parameters.AddWithValue("@satis",  item.BirimFiyat);
                     cmd.Parameters.AddWithValue("@sid",    sepetID);
                     cmd.ExecuteNonQuery();

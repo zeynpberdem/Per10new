@@ -10,6 +10,7 @@ namespace per10SatisWPF.Models
         public string UrunAdi { get; set; } = "";
         public string Barkod { get; set; }
         public decimal BirimFiyat { get; set; }
+        public decimal AlisFiyati { get; set; }
 
         public int Adet
         {
