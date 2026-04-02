@@ -315,6 +315,101 @@ namespace per10SatisWPF
             catch { }
         }
 
+        // ─── CSV EXPORT ───────────────────────────────────────────────
+        private void btnSatisExport_Click(object sender, RoutedEventArgs e)
+        {
+            if (dpBaslangic.SelectedDate == null || dpBitis.SelectedDate == null) return;
+            if (dgSepetler.ItemsSource == null)
+            { MessageBox.Show("Önce raporu getirin.", "Uyarı"); return; }
+
+            var onay = MessageBox.Show(
+                $"⚠️  DİKKAT!\n\n" +
+                $"{dpBaslangic.SelectedDate.Value:dd.MM.yyyy} - {dpBitis.SelectedDate.Value:dd.MM.yyyy} tarihleri arasındaki\n" +
+                $"tüm satış kayıtları CSV dosyasına aktarılacak ve ardından\n" +
+                $"veritabanından KALICI OLARAK SİLİNECEKTİR.\n\n" +
+                $"Bu işlem geri alınamaz. Devam etmek istiyor musunuz?",
+                "Aktar ve Sil — Onay",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (onay != MessageBoxResult.Yes) return;
+
+            string dosyaAdi = $"{dpBaslangic.SelectedDate.Value:dd.MM.yyyy} - {dpBitis.SelectedDate.Value:dd.MM.yyyy}_SatisLog.csv";
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            { FileName = dosyaAdi, DefaultExt = ".csv", Filter = "CSV Dosyası|*.csv" };
+            if (dlg.ShowDialog() != true) return;
+
+            try
+            {
+                var satirlar = new System.Collections.Generic.List<string>
+                    { "Sepet #;Net Tutar;İndirim;Tarih" };
+                foreach (dynamic item in dgSepetler.ItemsSource)
+                    satirlar.Add($"{item.SepetID};{item.Toplam};{item.Indirim};{item.Tarih}");
+                System.IO.File.WriteAllLines(dlg.FileName, satirlar, System.Text.Encoding.UTF8);
+
+                // SQL'den sil
+                DateTime bas   = dpBaslangic.SelectedDate.Value.Date.AddHours(8);
+                DateTime bitis = dpBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3);
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+                using var cmd = new SqlCommand(
+                    "DELETE s FROM Satislar s JOIN Sepetler sp ON s.SepetID = sp.SepetID WHERE sp.Tarih BETWEEN @bas AND @bitis; " +
+                    "DELETE FROM Sepetler WHERE Tarih BETWEEN @bas AND @bitis", conn);
+                cmd.Parameters.AddWithValue("@bas",   bas);
+                cmd.Parameters.AddWithValue("@bitis", bitis);
+                cmd.ExecuteNonQuery();
+
+                dgSepetler.ItemsSource = null;
+                lblCiro.Text = "—"; lblKar.Text = "—"; lblIslem.Text = "—";
+                MessageBox.Show($"✅ Kayıtlar aktarıldı ve silindi:\n{dlg.FileName}", "Başarılı");
+            }
+            catch (Exception ex) { MessageBox.Show($"Hata: {ex.Message}"); }
+        }
+
+        private void btnYikamaExport_Click(object sender, RoutedEventArgs e)
+        {
+            if (dpYikamaBaslangic.SelectedDate == null || dpYikamaBitis.SelectedDate == null) return;
+            if (dgYikamalar.ItemsSource == null)
+            { MessageBox.Show("Önce raporu getirin.", "Uyarı"); return; }
+
+            var onay = MessageBox.Show(
+                $"⚠️  DİKKAT!\n\n" +
+                $"{dpYikamaBaslangic.SelectedDate.Value:dd.MM.yyyy} - {dpYikamaBitis.SelectedDate.Value:dd.MM.yyyy} tarihleri arasındaki\n" +
+                $"tüm yıkama kayıtları CSV dosyasına aktarılacak ve ardından\n" +
+                $"veritabanından KALICI OLARAK SİLİNECEKTİR.\n\n" +
+                $"Bu işlem geri alınamaz. Devam etmek istiyor musunuz?",
+                "Aktar ve Sil — Onay",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (onay != MessageBoxResult.Yes) return;
+
+            string dosyaAdi = $"{dpYikamaBaslangic.SelectedDate.Value:dd.MM.yyyy} - {dpYikamaBitis.SelectedDate.Value:dd.MM.yyyy}_YikamaLog.csv";
+            var dlg = new Microsoft.Win32.SaveFileDialog
+            { FileName = dosyaAdi, DefaultExt = ".csv", Filter = "CSV Dosyası|*.csv" };
+            if (dlg.ShowDialog() != true) return;
+
+            try
+            {
+                var satirlar = new System.Collections.Generic.List<string> { "ID;Tutar;Tarih" };
+                foreach (dynamic item in dgYikamalar.ItemsSource)
+                    satirlar.Add($"{item.YikamaID};{item.Tutar};{item.Tarih}");
+                System.IO.File.WriteAllLines(dlg.FileName, satirlar, System.Text.Encoding.UTF8);
+
+                // SQL'den sil
+                DateTime bas   = dpYikamaBaslangic.SelectedDate.Value.Date.AddHours(8);
+                DateTime bitis = dpYikamaBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3);
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+                using var cmd = new SqlCommand(
+                    "DELETE FROM Yikamalar WHERE Tarih BETWEEN @bas AND @bitis", conn);
+                cmd.Parameters.AddWithValue("@bas",   bas);
+                cmd.Parameters.AddWithValue("@bitis", bitis);
+                cmd.ExecuteNonQuery();
+
+                dgYikamalar.ItemsSource = null;
+                lblYikamaToplam.Text = "—"; lblYikamaSayisi.Text = "—"; lblYikamaOrtalama.Text = "—";
+                MessageBox.Show($"✅ Kayıtlar aktarıldı ve silindi:\n{dlg.FileName}", "Başarılı");
+            }
+            catch (Exception ex) { MessageBox.Show($"Hata: {ex.Message}"); }
+        }
+
         // ─── YIKAMA RAPORU ────────────────────────────────────────────
         private void btnYikamaRaporGetir_Click(object sender, RoutedEventArgs e)
         {

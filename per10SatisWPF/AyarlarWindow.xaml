@@ -361,7 +361,12 @@
                                     Background="{StaticResource AccentBlue}" Foreground="White"
                                     FontSize="13" FontWeight="Bold"
                                     Template="{StaticResource RoundBtnTemplate}"
-                                    Cursor="Hand" Click="btnRaporGetir_Click"/>
+                                    Cursor="Hand" Click="btnRaporGetir_Click" Margin="0,0,8,0"/>
+                            <Button Content="📥  Excel'e Aktar ve SİL" Height="38" Padding="20,0"
+                                    Background="{StaticResource AccentRed}" Foreground="White"
+                                    FontSize="13" FontWeight="Bold"
+                                    Template="{StaticResource RoundBtnTemplate}"
+                                    Cursor="Hand" Click="btnSatisExport_Click"/>
                         </StackPanel>
                     </Border>
 
@@ -515,7 +520,12 @@
                                     Background="{StaticResource AccentOrange}" Foreground="White"
                                     FontSize="13" FontWeight="Bold"
                                     Template="{StaticResource RoundBtnTemplate}"
-                                    Cursor="Hand" Click="btnYikamaRaporGetir_Click"/>
+                                    Cursor="Hand" Click="btnYikamaRaporGetir_Click" Margin="0,0,8,0"/>
+                            <Button Content="📥  Excel'e Aktar ve SİL" Height="38" Padding="20,0"
+                                    Background="{StaticResource AccentRed}" Foreground="White"
+                                    FontSize="13" FontWeight="Bold"
+                                    Template="{StaticResource RoundBtnTemplate}"
+                                    Cursor="Hand" Click="btnYikamaExport_Click"/>
                         </StackPanel>
                     </Border>
 
