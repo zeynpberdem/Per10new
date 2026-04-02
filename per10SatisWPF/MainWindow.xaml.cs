@@ -533,7 +533,8 @@ namespace per10SatisWPF
                 conn.Open();
 
                 var cmdSepet = new SqlCommand(
-                    "INSERT INTO Sepetler (Tarih) VALUES (GETDATE()); SELECT SCOPE_IDENTITY();", conn);
+                    "INSERT INTO Sepetler (Tarih, Indirim) VALUES (GETDATE(), @indirim); SELECT SCOPE_IDENTITY();", conn);
+                cmdSepet.Parameters.AddWithValue("@indirim", IndirimAl());
                 int sepetID = Convert.ToInt32(cmdSepet.ExecuteScalar());
 
                 foreach (var item in _sepet)

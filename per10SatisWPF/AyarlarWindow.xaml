@@ -425,9 +425,10 @@
                                       CanUserResizeRows="False"
                                       SelectionChanged="dgSepetler_SelectionChanged">
                                 <DataGrid.Columns>
-                                    <DataGridTextColumn Header="Sepet #"   Binding="{Binding SepetID}"   Width="70"/>
-                                    <DataGridTextColumn Header="Toplam"    Binding="{Binding Toplam}"    Width="*"/>
-                                    <DataGridTextColumn Header="Tarih"     Binding="{Binding Tarih}"     Width="150"/>
+                                    <DataGridTextColumn Header="Sepet #"   Binding="{Binding SepetID}"  Width="60"/>
+                                    <DataGridTextColumn Header="Net Tutar" Binding="{Binding Toplam}"   Width="*"/>
+                                    <DataGridTextColumn Header="İndirim"   Binding="{Binding Indirim}"  Width="90"/>
+                                    <DataGridTextColumn Header="Tarih"     Binding="{Binding Tarih}"    Width="150"/>
                                 </DataGrid.Columns>
                             </DataGrid>
                         </Border>

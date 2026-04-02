@@ -228,17 +228,25 @@ namespace per10SatisWPF
                 using var conn = new SqlConnection(_connStr);
                 conn.Open();
 
-                // Özet
-                using (var cmd = new SqlCommand("SatisAnalizGetir", conn)
-                    { CommandType = CommandType.StoredProcedure })
+                DateTime bas   = dpBaslangic.SelectedDate.Value.Date.AddHours(8);
+                DateTime bitis = dpBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3);
+
+                // Özet — indirim düşülmüş ciro ve kar
+                using (var cmd = new SqlCommand(@"
+                    SELECT
+                        SUM(s.birimsatisfiyati * s.Miktar) - ISNULL(SUM(DISTINCT sp.Indirim), 0) AS ToplamCiro,
+                        SUM((s.birimsatisfiyati - s.birimalisfiyati) * s.Miktar) - ISNULL(SUM(DISTINCT sp.Indirim), 0) AS ToplamKar
+                    FROM Satislar s
+                    JOIN Sepetler sp ON s.SepetID = sp.SepetID
+                    WHERE s.SatisTarihi BETWEEN @bas AND @bitis", conn))
                 {
-                    cmd.Parameters.AddWithValue("@baslangic", dpBaslangic.SelectedDate.Value.Date.AddHours(8));
-                    cmd.Parameters.AddWithValue("@bitis",     dpBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3));
+                    cmd.Parameters.AddWithValue("@bas",   bas);
+                    cmd.Parameters.AddWithValue("@bitis", bitis);
                     using var r = cmd.ExecuteReader();
                     if (r.Read())
                     {
-                        decimal ciro = Convert.ToDecimal(r["ToplamCiro"]);
-                        decimal kar  = Convert.ToDecimal(r["ToplamKar"]);
+                        decimal ciro = r["ToplamCiro"] == DBNull.Value ? 0 : Convert.ToDecimal(r["ToplamCiro"]);
+                        decimal kar  = r["ToplamKar"]  == DBNull.Value ? 0 : Convert.ToDecimal(r["ToplamKar"]);
                         lblCiro.Text  = $"{ciro:N2} ₺";
                         lblKar.Text   = $"{kar:N2} ₺";
                         lblKar.Foreground = kar >= 0
@@ -247,21 +255,33 @@ namespace per10SatisWPF
                     }
                 }
 
-                // Sepet listesi
+                // Sepet listesi — indirim kolonu dahil
                 var dt = new DataTable();
-                using (var cmd2 = new SqlCommand("sp_SepetleriFiltrele", conn)
-                    { CommandType = CommandType.StoredProcedure })
+                using (var cmd2 = new SqlCommand(@"
+                    SELECT sp.SepetID,
+                           SUM(s.birimsatisfiyati * s.Miktar) AS BrutTutar,
+                           sp.Indirim,
+                           SUM(s.birimsatisfiyati * s.Miktar) - sp.Indirim AS NetTutar,
+                           sp.Tarih
+                    FROM Sepetler sp
+                    JOIN Satislar s ON s.SepetID = sp.SepetID
+                    WHERE sp.Tarih BETWEEN @bas AND @bitis
+                    GROUP BY sp.SepetID, sp.Indirim, sp.Tarih
+                    ORDER BY sp.Tarih DESC", conn))
                 {
-                    cmd2.Parameters.AddWithValue("@Baslangic", dpBaslangic.SelectedDate.Value.Date.AddHours(8));
-                    cmd2.Parameters.AddWithValue("@Bitis",     dpBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3));
+                    cmd2.Parameters.AddWithValue("@bas",   bas);
+                    cmd2.Parameters.AddWithValue("@bitis", bitis);
                     new SqlDataAdapter(cmd2).Fill(dt);
                 }
 
                 var liste = dt.AsEnumerable().Select(r => new
                 {
-                    SepetID = r.Field<int>("SepetID"),
-                    Toplam  = $"{r.Field<decimal>("ToplamTutar"):N2} ₺",
-                    Tarih   = r.Field<DateTime>("Tarih").ToString("dd.MM.yyyy HH:mm")
+                    SepetID  = r.Field<int>("SepetID"),
+                    Toplam   = $"{r.Field<decimal>("NetTutar"):N2} ₺",
+                    Indirim  = r.Field<decimal>("Indirim") > 0
+                                   ? $"-{r.Field<decimal>("Indirim"):N2} ₺"
+                                   : "—",
+                    Tarih    = r.Field<DateTime>("Tarih").ToString("dd.MM.yyyy HH:mm")
                 }).ToList();
 
                 dgSepetler.ItemsSource = liste;
