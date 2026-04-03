@@ -16,18 +16,7 @@ namespace per10SatisWPF
         private readonly string _connStr = ConfigurationManager.ConnectionStrings["Per10DB"].ConnectionString;
         private int _seciliUrunID = -1;
 
-        private readonly List<(int TurID, string Ad)> _kategoriler = new()
-        {
-            (1, "Motor Bakım"),
-            (2, "Cam Temizleyiciler"),
-            (3, "Parfümler"),
-            (4, "Jant ve Lastik Bakımı"),
-            (5, "Parlatma ve Koruma"),
-            (6, "Bezler ve Süngerler"),
-            (7, "İçecekler"),
-            (8, "Araç İç Bakım"),
-            (9, "Diğerleri"),
-        };
+        private List<(int TurID, string Ikon, string Ad)> _kategoriler = new();
 
         public AyarlarWindow()
         {
@@ -45,11 +34,7 @@ namespace per10SatisWPF
             dpYikamaBitis.SelectedDate     = DateTime.Today;
 
             // ComboBox doldur
-            foreach (var (turID, ad) in _kategoriler)
-            {
-                cmbKategoriFiltre.Items.Add(new ComboBoxItem { Content = ad, Tag = turID });
-                cmbYeniTur.Items.Add(new ComboBoxItem { Content = ad, Tag = turID });
-            }
+            KategorileriDBdenYukle();
             cmbKategoriFiltre.SelectedIndex = 0;
             cmbYeniTur.SelectedIndex = 0;
 
@@ -59,8 +44,11 @@ namespace per10SatisWPF
         // ─── ÜRÜN YÖNETİMİ ────────────────────────────────────────────
         private void cmbKategoriFiltre_Changed(object sender, SelectionChangedEventArgs e)
         {
-            if (cmbKategoriFiltre.SelectedItem is ComboBoxItem item && item.Tag is int turID)
+            // Artık ComboBoxItem değil, doğrudan SelectedValue üzerinden TurID alıyoruz
+            if (cmbKategoriFiltre.SelectedValue != null && int.TryParse(cmbKategoriFiltre.SelectedValue.ToString(), out int turID))
+            {
                 UrunleriListele(turID);
+            }
         }
 
         private void UrunleriListele(int turID)
@@ -164,6 +152,9 @@ namespace per10SatisWPF
                 cmbYeniMarka.DisplayMemberPath = "MarkaAdi";
                 cmbYeniMarka.SelectedValuePath = "MarkaID";
                 cmbYeniMarka.ItemsSource       = dt.DefaultView;
+                cmbMarkaSil.DisplayMemberPath = "MarkaAdi";
+                cmbMarkaSil.SelectedValuePath = "MarkaID";
+                cmbMarkaSil.ItemsSource = dt.DefaultView;
             }
             catch { }
         }
@@ -188,7 +179,7 @@ namespace per10SatisWPF
 
                 cmd.Parameters.AddWithValue("@YeniMarkaAdi",  DBNull.Value);
                 cmd.Parameters.AddWithValue("@MevcutMarkaID", cmbYeniMarka.SelectedValue ?? DBNull.Value);
-                cmd.Parameters.AddWithValue("@TurID",    (cmbYeniTur.SelectedItem as ComboBoxItem)?.Tag ?? 1);
+                cmd.Parameters.AddWithValue("@TurID", cmbYeniTur.SelectedValue ?? 1);
                 cmd.Parameters.AddWithValue("@UrunAdi",   txtYeniUrunAdi.Text.Trim());
                 cmd.Parameters.AddWithValue("@AlisFiyati",  Convert.ToDecimal(txtYeniAlis.Text));
                 cmd.Parameters.AddWithValue("@SatisFiyati", Convert.ToDecimal(txtYeniSatis.Text));
@@ -289,7 +280,123 @@ namespace per10SatisWPF
             }
             catch (Exception ex) { MessageBox.Show($"Rapor hatası: {ex.Message}"); }
         }
+        // ─── ÜRÜN VE MARKA SİLME ──────────────────────────────────────────────
+        private void btnUrunSil_Click(object sender, RoutedEventArgs e)
+        {
+            if (_seciliUrunID < 0) { MessageBox.Show("Önce listeden silinecek ürünü seçin.", "Uyarı"); return; }
 
+            try
+            {
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+
+                using var checkCmd = new SqlCommand("SELECT COUNT(DISTINCT SepetID) FROM Satislar WHERE UrunID = @id", conn);
+                checkCmd.Parameters.AddWithValue("@id", _seciliUrunID);
+                int sepetSayisi = (int)checkCmd.ExecuteScalar();
+
+                if (sepetSayisi > 0)
+                {
+                    var onay = MessageBox.Show($"Bu ürüne ait {sepetSayisi} adet sepet kaydı bulundu!\n\nÜrünü silebilmek için bu sepetler Excel(CSV) olarak dışa aktarılacak ve ardından veritabanından kalıcı olarak silinecektir.\n\nOnaylıyor musunuz?", "Satış Kayıtları Var", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (onay != MessageBoxResult.Yes) return;
+
+                    if (!SepetleriDisaAktarVeSil(conn, $"UrunID = {_seciliUrunID}")) return;
+                }
+                using var cmdDelStok = new SqlCommand("DELETE FROM StokHareketleri WHERE UrunID = @id", conn);
+                cmdDelStok.Parameters.AddWithValue("@id", _seciliUrunID);
+                cmdDelStok.ExecuteNonQuery();
+
+                using var cmdDel = new SqlCommand("DELETE FROM Urunler WHERE UrunID = @id", conn);
+                cmdDel.Parameters.AddWithValue("@id", _seciliUrunID);
+                cmdDel.ExecuteNonQuery();
+
+                MessageBox.Show("✅ Ürün başarıyla silindi!", "Sistem");
+                _seciliUrunID = -1;
+                if (cmbKategoriFiltre.SelectedValue != null && int.TryParse(cmbKategoriFiltre.SelectedValue.ToString(), out int turID))
+                    UrunleriListele(turID);
+            }
+            catch (Exception ex) { MessageBox.Show($"Hata: {ex.Message}"); }
+        }
+
+        private void btnMarkaSil_Click(object sender, RoutedEventArgs e)
+        {
+            if (cmbMarkaSil.SelectedValue == null) { MessageBox.Show("Lütfen silinecek markayı seçin.", "Uyarı"); return; }
+
+            int markaID = (int)cmbMarkaSil.SelectedValue;
+            string markaAdi = cmbMarkaSil.Text;
+
+            try
+            {
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+
+                using var checkCmd = new SqlCommand("SELECT COUNT(DISTINCT s.SepetID) FROM Satislar s JOIN Urunler u ON s.UrunID = u.UrunID WHERE u.MarkaID = @id", conn);
+                checkCmd.Parameters.AddWithValue("@id", markaID);
+                int sepetSayisi = (int)checkCmd.ExecuteScalar();
+
+                if (sepetSayisi > 0)
+                {
+                    var onay = MessageBox.Show($"'{markaAdi}' markasına ait ürünlerin geçtiği {sepetSayisi} adet sepet kaydı bulundu!\n\nMarkayı silebilmek için bu sepetler Excel(CSV) olarak dışa aktarılacak ve veritabanından kalıcı olarak silinecektir.\n\nOnaylıyor musunuz?", "Satış Kayıtları Var", MessageBoxButton.YesNo, MessageBoxImage.Warning);
+                    if (onay != MessageBoxResult.Yes) return;
+
+                    if (!SepetleriDisaAktarVeSil(conn, $"UrunID IN (SELECT UrunID FROM Urunler WHERE MarkaID = {markaID})")) return;
+                }
+
+                new SqlCommand($"DELETE FROM StokHareketleri WHERE UrunID IN (SELECT UrunID FROM Urunler WHERE MarkaID = {markaID})", conn).ExecuteNonQuery();
+                new SqlCommand($"DELETE FROM Urunler WHERE MarkaID = {markaID}", conn).ExecuteNonQuery();
+                new SqlCommand($"DELETE FROM Markalar WHERE MarkaID = {markaID}", conn).ExecuteNonQuery();
+
+                MessageBox.Show($"✅ '{markaAdi}' markası ve ona bağlı tüm ürünler silindi!", "Sistem");
+                MarkalariYukle();
+                if (cmbKategoriFiltre.SelectedValue != null && int.TryParse(cmbKategoriFiltre.SelectedValue.ToString(), out int turID))
+                    UrunleriListele(turID);
+            }
+            catch (Exception ex) { MessageBox.Show($"Hata: {ex.Message}"); }
+        }
+
+        // Ortak Yedekleme ve Silme Metodu
+        private bool SepetleriDisaAktarVeSil(SqlConnection conn, string sqlSart)
+        {
+            // Tarih aralığını bul (Dosya adı için)
+            using var dateCmd = new SqlCommand($"SELECT MIN(sp.Tarih), MAX(sp.Tarih) FROM Sepetler sp JOIN Satislar s ON sp.SepetID = s.SepetID WHERE s.{sqlSart}", conn);
+            using var reader = dateCmd.ExecuteReader();
+            DateTime minDate = DateTime.Today, maxDate = DateTime.Today;
+            if (reader.Read() && reader[0] != DBNull.Value)
+            {
+                minDate = Convert.ToDateTime(reader[0]);
+                maxDate = Convert.ToDateTime(reader[1]);
+            }
+            reader.Close();
+
+            string dosyaAdi = $"{minDate:dd.MM.yyyy}-{maxDate:dd.MM.yyyy}_SatisLog.csv";
+            var dlg = new Microsoft.Win32.SaveFileDialog { FileName = dosyaAdi, DefaultExt = ".csv", Filter = "CSV Dosyası|*.csv" };
+            if (dlg.ShowDialog() != true) return false;
+
+            // Sadece hedef sepetleri çek
+            var dt = new DataTable();
+            string exportQuery = $@"
+        SELECT sp.SepetID, SUM(s.birimsatisfiyati * s.Miktar) - sp.Indirim AS NetTutar, sp.Indirim, sp.Tarih
+        FROM Sepetler sp
+        JOIN Satislar s ON s.SepetID = sp.SepetID
+        WHERE sp.SepetID IN (SELECT DISTINCT SepetID FROM Satislar WHERE {sqlSart})
+        GROUP BY sp.SepetID, sp.Indirim, sp.Tarih
+        ORDER BY sp.Tarih";
+
+            using (var exportCmd = new SqlCommand(exportQuery, conn))
+                new SqlDataAdapter(exportCmd).Fill(dt);
+
+            // CSV oluştur
+            var satirlar = new List<string> { "Sepet #;Net Tutar;Indirim;Tarih" };
+            foreach (DataRow row in dt.Rows)
+                satirlar.Add($"{row["SepetID"]};{Convert.ToDecimal(row["NetTutar"]):N2} ₺;{Convert.ToDecimal(row["Indirim"]):N2} ₺;{Convert.ToDateTime(row["Tarih"]):dd.MM.yyyy HH:mm}");
+
+            System.IO.File.WriteAllLines(dlg.FileName, satirlar, System.Text.Encoding.UTF8);
+
+            // BÜYÜK TEMİZLİK (Sadece o sepetleri uçur)
+            new SqlCommand($"DELETE FROM Satislar WHERE SepetID IN (SELECT DISTINCT SepetID FROM Satislar WHERE {sqlSart})", conn).ExecuteNonQuery();
+            new SqlCommand("DELETE FROM Sepetler WHERE SepetID NOT IN (SELECT DISTINCT SepetID FROM Satislar)", conn).ExecuteNonQuery();
+
+            return true;
+        }
         private void dgSepetler_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (dgSepetler.SelectedItem == null) return;
@@ -590,6 +697,92 @@ namespace per10SatisWPF
         {
             tb.Text = mesaj;
             bd.Visibility = Visibility.Visible;
+        }
+        // ─── KATEGORİ İŞLEMLERİ ───────────────────────────────────────────
+        private void KategorileriDBdenYukle()
+        {
+            try
+            {
+                using var conn = new SqlConnection(_connStr);
+                // "Turler" tablonun gerçek adına ve kolonlarına göre burayı ayarlayabilirsin.
+                var da = new SqlDataAdapter("SELECT TurID, TurAdi FROM Turler ORDER BY TurAdi", conn);
+                var dt = new DataTable();
+                da.Fill(dt);
+
+                // Tüm ComboBox'ları dinamik olarak güncelle
+                cmbKategoriFiltre.ItemsSource = dt.DefaultView;
+                cmbKategoriFiltre.DisplayMemberPath = "TurAdi";
+                cmbKategoriFiltre.SelectedValuePath = "TurID";
+
+                cmbYeniTur.ItemsSource = dt.DefaultView;
+                cmbYeniTur.DisplayMemberPath = "TurAdi";
+                cmbYeniTur.SelectedValuePath = "TurID";
+
+                cmbKategoriSil.ItemsSource = dt.DefaultView;
+                cmbKategoriSil.DisplayMemberPath = "TurAdi";
+                cmbKategoriSil.SelectedValuePath = "TurID";
+
+                if (cmbKategoriFiltre.Items.Count > 0) cmbKategoriFiltre.SelectedIndex = 0;
+                if (cmbYeniTur.Items.Count > 0) cmbYeniTur.SelectedIndex = 0;
+            
+            }
+            catch { /* Loglama eklenebilir */ }
+        }
+
+        private void btnKategoriEkle_Click(object sender, RoutedEventArgs e)
+        {
+            string yeniAd = txtYeniKategoriAdi.Text.Trim();
+            if (string.IsNullOrEmpty(yeniAd)) { MessageBox.Show("Kategori adı boş olamaz!"); return; }
+
+            try
+            {
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+                using var cmd = new SqlCommand("INSERT INTO Turler (TurAdi) VALUES (@ad)", conn);
+                cmd.Parameters.AddWithValue("@ad", yeniAd);
+                cmd.ExecuteNonQuery();
+
+                MessageBox.Show($"✅ '{yeniAd}' kategorisi başarıyla eklendi!", "Sistem");
+                txtYeniKategoriAdi.Clear();
+                KategorileriDBdenYukle(); // Listeleri yenile
+            }
+            catch (Exception ex) { MessageBox.Show($"Kategori eklenemedi: {ex.Message}"); }
+        }
+
+        private void btnKategoriSil_Click(object sender, RoutedEventArgs e)
+        {
+            if (cmbKategoriSil.SelectedValue == null) { MessageBox.Show("Lütfen silinecek kategoriyi seçin!"); return; }
+
+            int seciliTurID = (int)cmbKategoriSil.SelectedValue;
+            string seciliTurAdi = cmbKategoriSil.Text;
+
+            try
+            {
+                using var conn = new SqlConnection(_connStr);
+                conn.Open();
+
+                // ŞART KONTROLÜ: Bu kategoriye ait ürün var mı?
+                using var checkCmd = new SqlCommand("SELECT COUNT(*) FROM Urunler WHERE TurID = @id", conn);
+                checkCmd.Parameters.AddWithValue("@id", seciliTurID);
+                int urunSayisi = (int)checkCmd.ExecuteScalar();
+
+                if (urunSayisi > 0)
+                {
+                    MessageBox.Show(
+                        $"⚠️ İŞLEM REDDEDİLDİ!\n\n'{seciliTurAdi}' kategorisine kayıtlı {urunSayisi} adet ürün bulunuyor.\nKategoriyi silmek için önce bu ürünleri silmeli veya başka kategoriye taşımalısınız.",
+                        "Güvenlik Uyarısı", MessageBoxButton.OK, MessageBoxImage.Warning);
+                    return;
+                }
+
+                // Ürün yoksa acıma, sil gitsin!
+                using var deleteCmd = new SqlCommand("DELETE FROM Turler WHERE TurID = @id", conn);
+                deleteCmd.Parameters.AddWithValue("@id", seciliTurID);
+                deleteCmd.ExecuteNonQuery();
+
+                MessageBox.Show($"🗑️ '{seciliTurAdi}' kategorisi kalıcı olarak silindi.", "Sistem");
+                KategorileriDBdenYukle(); // Listeleri yenile
+            }
+            catch (Exception ex) { MessageBox.Show($"Silme hatası: {ex.Message}"); }
         }
 
         private void btnKapat_Click(object sender, RoutedEventArgs e) => Close();

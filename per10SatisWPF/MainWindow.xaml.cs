@@ -23,19 +23,8 @@ namespace per10SatisWPF
         private readonly DispatcherTimer _barkodTimer = new DispatcherTimer
             { Interval = TimeSpan.FromMilliseconds(200) };
 
-        private readonly List<(int TurID, string Ikon, string Ad)> _kategoriler = new()
-        {
-            (0, "🏪", "Tümü"),
-            (1, "🔧", "Motor Bakım"),
-            (2, "🪟", "Cam Temizleyiciler"),
-            (3, "🌸", "Parfümler"),
-            (4, "🛞", "Jant ve Lastik"),
-            (5, "✨", "Parlatma ve Koruma"),
-            (6, "🧽", "Bezler ve Süngerler"),
-            (7, "🥤", "İçecekler"),
-            (8, "🚗", "Araç İç Bakım"),
-            (9, "📦", "Diğerleri"),
-        };
+
+        private List<(int TurID, string Ikon, string Ad)> _kategoriler = new List<(int TurID, string Ikon, string Ad)>();
 
         public MainWindow()
         {
@@ -64,21 +53,64 @@ namespace per10SatisWPF
         // ─── KATEGORİLER ──────────────────────────────────────────────
         private void KategorileriYukle()
         {
-            pnlKategoriler.Children.Clear();
-            foreach (var (turID, ikon, ad) in _kategoriler)
+            _kategoriler.Clear();
+            _kategoriler.Add((0, "🏪", "Tümü"));
+
+            try
             {
-                bool aktif = turID == _aktifTurID;
+                using (var conn = new SqlConnection(_connStr))
+                {
+                    conn.Open();
+                    using (var cmd = new SqlCommand("SELECT TurID, TurAdi FROM Turler ORDER BY TurID", conn))
+                    {
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
+                            {
+                                int id = Convert.ToInt32(r["TurID"]);
+                                string ad = r["TurAdi"].ToString();
+                                string ikon = "🏷️"; // Yeni eklenenler için varsayılan
+
+                                // Hata vermemesi için klasik switch kullandım
+                                switch (id)
+                                {
+                                    case 1: ikon = "🔧"; break;
+                                    case 2: ikon = "🪟"; break;
+                                    case 3: ikon = "🌸"; break;
+                                    case 4: ikon = "🛞"; break;
+                                    case 5: ikon = "✨"; break;
+                                    case 6: ikon = "🧽"; break;
+                                    case 7: ikon = "🥤"; break;
+                                    case 8: ikon = "🚗"; break;
+                                    case 9: ikon = "📦"; break;
+                                }
+
+                                _kategoriler.Add((id, ikon, ad));
+                            }
+                        }
+                    }
+                }
+            }
+            catch { } // Veritabanı hatası alırsan çökmesin
+
+            // Arayüz butonlarını oluşturma kısmı (Senin kodunla birebir aynı)
+            pnlKategoriler.Children.Clear();
+            foreach (var item in _kategoriler)
+            {
+                bool aktif = item.TurID == _aktifTurID;
 
                 var sp = new StackPanel { Orientation = Orientation.Horizontal };
                 sp.Children.Add(new TextBlock
                 {
-                    Text = ikon, FontSize = 14,
+                    Text = item.Ikon,
+                    FontSize = 14,
                     VerticalAlignment = VerticalAlignment.Center,
                     Margin = new Thickness(0, 0, 10, 0)
                 });
                 sp.Children.Add(new TextBlock
                 {
-                    Text = ad, FontSize = 13,
+                    Text = item.Ad,
+                    FontSize = 13,
                     Foreground = Brushes.White,
                     VerticalAlignment = VerticalAlignment.Center
                 });
@@ -86,7 +118,7 @@ namespace per10SatisWPF
                 var btn = new Button
                 {
                     Content = sp,
-                    Tag = turID,
+                    Tag = item.TurID,
                     Height = 42,
                     Margin = new Thickness(0, 2, 0, 2),
                     BorderThickness = new Thickness(0),
@@ -120,38 +152,83 @@ namespace per10SatisWPF
             _urunler.Clear();
             pnlUrunler.Children.Clear();
 
-            string query = @"SELECT u.UrunID, u.UrunAdi, m.MarkaAdi, u.AlisFiyati, u.SatisFiyati, u.MevcutStok, u.TurID
+            int sabitUrunID = -1; // Paspas kağıdını iki defa göstermemek için ID'sini tutacağız
+
+            try
+            {
+                using (var conn = new SqlConnection(_connStr))
+                {
+                    conn.Open();
+
+                    // 1. AŞAMA: ÖNCE VIP ÜRÜNÜ (PASPAS KAĞIDI) BUL VE EN BAŞA EKLE
+                    string sabitSorgu = @"SELECT u.UrunID, u.UrunAdi, m.MarkaAdi, u.AlisFiyati, u.SatisFiyati, u.MevcutStok, u.TurID
+                                  FROM Urunler u
+                                  JOIN Markalar m ON u.MarkaID = m.MarkaID
+                                  WHERE u.UrunAdi = 'PASPAS KAĞIDI' AND m.MarkaAdi = 'PER10' AND u.MevcutStok > 0";
+
+                    using (var cmdSabit = new SqlCommand(sabitSorgu, conn))
+                    using (var rSabit = cmdSabit.ExecuteReader())
+                    {
+                        if (rSabit.Read())
+                        {
+                            var sabitUrun = new Urun
+                            {
+                                UrunID = Convert.ToInt32(rSabit["UrunID"]),
+                                UrunAdi = rSabit["UrunAdi"].ToString(),
+                                MarkaAdi = rSabit["MarkaAdi"].ToString(),
+                                AlisFiyati = Convert.ToDecimal(rSabit["AlisFiyati"]),
+                                SatisFiyati = Convert.ToDecimal(rSabit["SatisFiyati"]),
+                                MevcutStok = Convert.ToInt32(rSabit["MevcutStok"]),
+                                TurID = Convert.ToInt32(rSabit["TurID"])
+                            };
+                            sabitUrunID = sabitUrun.UrunID;
+                            _urunler.Add(sabitUrun);
+
+                            var sabitKart = UrunKartiOlustur(sabitUrun);
+                            // Sabitlendiği belli olsun diye çerçevesini turuncu ve kalın yapıyoruz:
+                            sabitKart.BorderBrush = (Brush)FindResource("AccentOrange");
+                            sabitKart.BorderThickness = new Thickness(2);
+
+                            pnlUrunler.Children.Add(sabitKart);
+                        }
+                    }
+
+                    // 2. AŞAMA: DİĞER ÜRÜNLERİ LİSTELE (Sabit ürün hariç)
+                    string query = @"SELECT u.UrunID, u.UrunAdi, m.MarkaAdi, u.AlisFiyati, u.SatisFiyati, u.MevcutStok, u.TurID
                              FROM Urunler u
                              JOIN Markalar m ON u.MarkaID = m.MarkaID
                              WHERE u.MevcutStok > 0";
 
-            if (turID > 0) query += " AND u.TurID = @turID";
-            if (!string.IsNullOrWhiteSpace(arama))
-                query += " AND (u.UrunAdi LIKE @arama OR m.MarkaAdi LIKE @arama)";
+                    // Eğer Paspas Kağıdı bulunduysa, onu diğer aramaların dışında tut ki 2 defa ekranda çıkmasın
+                    if (sabitUrunID > 0) query += " AND u.UrunID != @sabitID";
+                    if (turID > 0) query += " AND u.TurID = @turID";
+                    if (!string.IsNullOrWhiteSpace(arama)) query += " AND (u.UrunAdi LIKE @arama OR m.MarkaAdi LIKE @arama)";
 
-            try
-            {
-                using var conn = new SqlConnection(_connStr);
-                conn.Open();
-                using var cmd = new SqlCommand(query, conn);
-                if (turID > 0) cmd.Parameters.AddWithValue("@turID", turID);
-                if (!string.IsNullOrWhiteSpace(arama)) cmd.Parameters.AddWithValue("@arama", $"%{arama}%");
-
-                using var r = cmd.ExecuteReader();
-                while (r.Read())
-                {
-                    var urun = new Urun
+                    using (var cmd = new SqlCommand(query, conn))
                     {
-                        UrunID      = Convert.ToInt32(r["UrunID"]),
-                        UrunAdi     = r["UrunAdi"].ToString(),
-                        MarkaAdi    = r["MarkaAdi"].ToString(),
-                        AlisFiyati  = Convert.ToDecimal(r["AlisFiyati"]),
-                        SatisFiyati = Convert.ToDecimal(r["SatisFiyati"]),
-                        MevcutStok  = Convert.ToInt32(r["MevcutStok"]),
-                        TurID       = Convert.ToInt32(r["TurID"])
-                    };
-                    _urunler.Add(urun);
-                    pnlUrunler.Children.Add(UrunKartiOlustur(urun));
+                        if (sabitUrunID > 0) cmd.Parameters.AddWithValue("@sabitID", sabitUrunID);
+                        if (turID > 0) cmd.Parameters.AddWithValue("@turID", turID);
+                        if (!string.IsNullOrWhiteSpace(arama)) cmd.Parameters.AddWithValue("@arama", $"%{arama}%");
+
+                        using (var r = cmd.ExecuteReader())
+                        {
+                            while (r.Read())
+                            {
+                                var urun = new Urun
+                                {
+                                    UrunID = Convert.ToInt32(r["UrunID"]),
+                                    UrunAdi = r["UrunAdi"].ToString(),
+                                    MarkaAdi = r["MarkaAdi"].ToString(),
+                                    AlisFiyati = Convert.ToDecimal(r["AlisFiyati"]),
+                                    SatisFiyati = Convert.ToDecimal(r["SatisFiyati"]),
+                                    MevcutStok = Convert.ToInt32(r["MevcutStok"]),
+                                    TurID = Convert.ToInt32(r["TurID"])
+                                };
+                                _urunler.Add(urun);
+                                pnlUrunler.Children.Add(UrunKartiOlustur(urun));
+                            }
+                        }
+                    }
                 }
             }
             catch (Exception ex)
@@ -161,7 +238,6 @@ namespace per10SatisWPF
 
             lblUrunSayisi.Text = $"{_urunler.Count} ürün";
         }
-
         private Border UrunKartiOlustur(Urun urun)
         {
             var border = new Border
@@ -610,8 +686,11 @@ namespace per10SatisWPF
         }
 
         // ─── AYARLAR ──────────────────────────────────────────────────
-        private void btnAyarlar_Click(object sender, RoutedEventArgs e) =>
+        private void btnAyarlar_Click(object sender, RoutedEventArgs e)
+        {
             new AyarlarWindow().ShowDialog();
+            KategorileriYukle(); // Ayarlar kapanınca listeyi tazele
+        }
 
         // ─── F TUŞ KISAYOLLARI ─────────────────────────────────────────
         private void Window_KeyDown(object sender, KeyEventArgs e)
