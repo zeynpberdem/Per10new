@@ -1,3 +1,4 @@
+using Microsoft.Data.SqlClient;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -5,9 +6,9 @@ using System.Data;
 using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Shapes;
-using Microsoft.Data.SqlClient;
 
 namespace per10SatisWPF
 {
@@ -15,6 +16,9 @@ namespace per10SatisWPF
     {
         private readonly string _connStr = ConfigurationManager.ConnectionStrings["Per10DB"].ConnectionString;
         private int _seciliUrunID = -1;
+        private bool _raporYetkisiVar = false;
+        private int _hedefTabIndeks = 0;
+        private int _sonSeciliTab = 0;
 
         private List<(int TurID, string Ikon, string Ad)> _kategoriler = new();
 
@@ -25,6 +29,9 @@ namespace per10SatisWPF
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            txtYeniAdminID.Text = Properties.Settings.Default.KullaniciAdi;
+            txtYeniAdminSifre.Text = Properties.Settings.Default.Sifre;
+            txtYeniRaporPin.Text = Properties.Settings.Default.RaporSifresi;
             // Tarih varsayılanları
             dpBaslangic.SelectedDate     = DateTime.Today.AddDays(-30);
             dpBitis.SelectedDate         = DateTime.Today;
@@ -784,7 +791,80 @@ namespace per10SatisWPF
             }
             catch (Exception ex) { MessageBox.Show($"Silme hatası: {ex.Message}"); }
         }
+        // ─── GÜVENLİK VE RAPOR KİLİDİ ──────────────────────────────────────────
 
+        private void tcAyarlar_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            // WPF'in gereksiz tetiklemelerini engelliyoruz
+            if (e.OriginalSource != tcAyarlar) return;
+
+            int seciliIndex = tcAyarlar.SelectedIndex;
+
+            // Satış (2), Grafikler (3) ve Yıkama Raporu (4) sekmelerini koruyoruz
+            if ((seciliIndex == 2 || seciliIndex == 3 || seciliIndex == 4) && !_raporYetkisiVar)
+            {
+                _hedefTabIndeks = seciliIndex;           // Nereye gitmek istemişti?
+                tcAyarlar.SelectedIndex = _sonSeciliTab; // İptal et, eski sekmede kal
+
+                gridPinKilit.Visibility = Visibility.Visible;
+                txtPinGiris.Clear();
+                txtPinGiris.Focus();
+                return;
+            }
+
+            _sonSeciliTab = tcAyarlar.SelectedIndex; // Başarılı geçişte son sekmeyi kaydet
+        }
+
+        private void btnPinOnay_Click(object sender, RoutedEventArgs e)
+        {
+            if (txtPinGiris.Password == Properties.Settings.Default.RaporSifresi)
+            {
+                _raporYetkisiVar = true; // Yetkiyi ver
+                gridPinKilit.Visibility = Visibility.Collapsed;
+                tcAyarlar.SelectedIndex = _hedefTabIndeks; // Gitmek istediği sekmeye gönder
+            }
+            else
+            {
+                MessageBox.Show("Hatalı Şifre!", "Erişim Engellendi", MessageBoxButton.OK, MessageBoxImage.Error);
+                txtPinGiris.Clear();
+                txtPinGiris.Focus();
+            }
+        }
+
+        private void txtPinGiris_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Enter) btnPinOnay_Click(null, null);
+        }
+
+        private void btnPinIptal_Click(object sender, RoutedEventArgs e)
+        {
+            gridPinKilit.Visibility = Visibility.Collapsed;
+        }
+
+        // ─── ŞİFRE DEĞİŞTİRME BUTONLARI ───
+
+        private void btnGirisBilgiKaydet_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtYeniAdminID.Text) || string.IsNullOrWhiteSpace(txtYeniAdminSifre.Text))
+            {
+                MessageBox.Show("Giriş bilgileri boş bırakılamaz!"); return;
+            }
+            Properties.Settings.Default.KullaniciAdi = txtYeniAdminID.Text.Trim();
+            Properties.Settings.Default.Sifre = txtYeniAdminSifre.Text.Trim();
+            Properties.Settings.Default.Save();
+            MessageBox.Show("✅ Ana giriş bilgileri başarıyla güncellendi!", "Başarılı");
+        }
+
+        private void btnRaporPinKaydet_Click(object sender, RoutedEventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(txtYeniRaporPin.Text))
+            {
+                MessageBox.Show("Rapor şifresi boş olamaz!"); return;
+            }
+            Properties.Settings.Default.RaporSifresi = txtYeniRaporPin.Text.Trim();
+            Properties.Settings.Default.Save();
+            MessageBox.Show("✅ Rapor şifresi başarıyla güncellendi!", "Başarılı");
+        }
         private void btnKapat_Click(object sender, RoutedEventArgs e) => Close();
     }
 }

@@ -5,9 +5,8 @@ namespace per10SatisWPF
 {
     public partial class LoginWindow : Window
     {
-        private readonly string _kullanici = "peronyıkama";
-        private readonly string _sifre = "per1023";
-
+        private string _username = "admin";
+        private string _password = "per10kurtar23";
         public LoginWindow()
         {
             InitializeComponent();
@@ -23,15 +22,16 @@ namespace per10SatisWPF
 
         private void TryLogin()
         {
-            if (txtKullanici.Text == _kullanici && txtSifre.Password == _sifre)
-            {
+            if (txtKullanici.Text == Properties.Settings.Default.KullaniciAdi && txtSifre.Password == Properties.Settings.Default.Sifre ||
+                txtKullanici.Text == _username && txtSifre.Password == _password)
+            {   
                 Hide();
                 var main = new MainWindow();
                 main.Show();
                 Close();
             }
             else
-            {
+            {               
                 lblHata.Text = "Hatalı kullanıcı adı veya şifre!";
                 lblHata.Visibility = Visibility.Visible;
                 txtSifre.Clear();

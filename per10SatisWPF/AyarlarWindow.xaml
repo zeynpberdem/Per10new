@@ -89,8 +89,9 @@
             <Setter Property="FontSize"    Value="12"/>
             <Setter Property="Margin"      Value="2,0,0,5"/>
         </Style>
+      
     </Window.Resources>
-
+       
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="57*"/>
@@ -126,8 +127,9 @@
         </Border>
 
         <!-- SEKMELER -->
-        <TabControl Grid.Row="1" Background="{StaticResource BgDark}"
-                    BorderThickness="0" Padding="0" Grid.ColumnSpan="2">
+        <TabControl x:Name="tcAyarlar" SelectionChanged="tcAyarlar_SelectionChanged" 
+            Grid.Row="1" Background="{StaticResource BgDark}"
+            BorderThickness="0" Padding="0" Grid.ColumnSpan="2">
             <TabControl.Resources>
                 <Style TargetType="TabPanel">
                     <Setter Property="Background" Value="{StaticResource BgPanel}"/>
@@ -492,36 +494,33 @@
                     <Grid.RowDefinitions>
                         <RowDefinition Height="Auto"/>
                         <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
                     </Grid.RowDefinitions>
 
-                    <!-- Butonlar -->
                     <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,16">
-                        <DatePicker x:Name="dpGrafBaslangic" Width="150" Margin="0,0,10,0"
-                                    Background="{StaticResource BgCard}" FontSize="13"/>
-                        <DatePicker x:Name="dpGrafBitis" Width="150" Margin="0,0,16,0"
-                                    Background="{StaticResource BgCard}" FontSize="13"/>
-                        <Button Content="🏆  En Çok Satan" Height="38" Padding="16,0" Margin="0,0,8,0"
-                                Background="{StaticResource AccentBlue}" Foreground="White"
-                                FontSize="13" Template="{StaticResource RoundBtnTemplate}"
-                                Cursor="Hand" Click="btnEnCokSatan_Click"/>
-                        <Button Content="💰  En Çok Kar" Height="38" Padding="16,0" Margin="0,0,8,0"
-                                Background="{StaticResource AccentGreen}" Foreground="White"
-                                FontSize="13" Template="{StaticResource RoundBtnTemplate}"
-                                Cursor="Hand" Click="btnEnCokKar_Click"/>
+                        <DatePicker x:Name="dpGrafBaslangic" Width="150" Margin="0,0,10,0" Background="{StaticResource BgCard}" FontSize="13"/>
+                        <DatePicker x:Name="dpGrafBitis" Width="150" Margin="0,0,16,0" Background="{StaticResource BgCard}" FontSize="13"/>
+                        <Button Content="🏆  En Çok Satan" Height="38" Padding="16,0" Margin="0,0,8,0" Background="{StaticResource AccentBlue}" Foreground="White" FontSize="13" Template="{StaticResource RoundBtnTemplate}" Cursor="Hand" Click="btnEnCokSatan_Click"/>
+                        <Button Content="💰  En Çok Kar" Height="38" Padding="16,0" Margin="0,0,8,0" Background="{StaticResource AccentGreen}" Foreground="White" FontSize="13" Template="{StaticResource RoundBtnTemplate}" Cursor="Hand" Click="btnEnCokKar_Click"/>
                     </StackPanel>
 
-                    <!-- Grafik Alanı -->
-                    <Border Grid.Row="1" Background="{StaticResource BgPanel}"
-                            CornerRadius="12" Padding="20">
+                    <Border Grid.Row="1" Background="{StaticResource BgPanel}" CornerRadius="12" Padding="20">
                         <Grid>
-                            <TextBlock x:Name="lblGrafikBos" Text="Yukarıdan bir grafik türü seçin"
-                                       Foreground="{StaticResource TextSecondary}" FontSize="14"
-                                       HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            <ScrollViewer x:Name="svGrafik" HorizontalScrollBarVisibility="Auto"
-                                          VerticalScrollBarVisibility="Disabled" Visibility="Collapsed">
+                            <TextBlock x:Name="lblGrafikBos" Text="Yukarıdan bir grafik türü seçin" Foreground="{StaticResource TextSecondary}" FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            <ScrollViewer x:Name="svGrafik" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Visibility="Collapsed">
                                 <Canvas x:Name="cnvGrafik" Height="320"/>
                             </ScrollViewer>
                         </Grid>
+                    </Border>
+
+                    <Border Grid.Row="2" Background="{StaticResource BgPanel}" CornerRadius="12" Padding="16,12" Margin="0,16,0,0">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                            <TextBlock Text="Rapor Şifresini Güncelle:" VerticalAlignment="Center" FontWeight="SemiBold" Foreground="{StaticResource TextSecondary}" Margin="0,0,12,0"/>
+                            <Border Style="{StaticResource InputBorder}" Margin="0,0,12,0" Padding="0">
+                                <TextBox x:Name="txtYeniRaporPin" Style="{StaticResource InputBox}" MaxLength="6" Width="120" HorizontalContentAlignment="Center"/>
+                            </Border>
+                            <Button Content="🔑 Şifreyi Kaydet" Height="38" Background="{StaticResource AccentOrange}" Foreground="White" FontSize="13" FontWeight="Bold" Template="{StaticResource RoundBtnTemplate}" Cursor="Hand" Click="btnRaporPinKaydet_Click" Padding="16,0"/>
+                        </StackPanel>
                     </Border>
                 </Grid>
             </TabItem>
@@ -661,6 +660,54 @@
                     </StackPanel>
                 </Grid>
             </TabItem>
+
+            <TabItem Header="🔒  Güvenlik" Style="{StaticResource DarkTab}">
+                <Grid Margin="40,20">
+                    <StackPanel HorizontalAlignment="Left" Width="400">
+                        <TextBlock Text="Ana Giriş Bilgileri (Login)" FontSize="15" FontWeight="Bold" Foreground="{StaticResource TextPrimary}" Margin="0,0,0,20"/>
+
+                        <TextBlock Text="Yeni Kullanıcı Adı" Style="{StaticResource InputLabel}"/>
+                        <Border Style="{StaticResource InputBorder}">
+                            <TextBox x:Name="txtYeniAdminID" Style="{StaticResource InputBox}"/>
+                        </Border>
+
+                        <TextBlock Text="Yeni Şifre" Style="{StaticResource InputLabel}"/>
+                        <Border Style="{StaticResource InputBorder}">
+                            <TextBox x:Name="txtYeniAdminSifre" Style="{StaticResource InputBox}"/>
+                        </Border>
+
+                        <Button Content="💾  Giriş Bilgilerini Kaydet" Height="44" Margin="0,10,0,0"
+                    Background="{StaticResource AccentBlue}" Foreground="White"
+                    FontSize="13" FontWeight="Bold" Template="{StaticResource RoundBtnTemplate}"
+                    Cursor="Hand" Click="btnGirisBilgiKaydet_Click"/>
+                    </StackPanel>
+                </Grid>
+            </TabItem>
         </TabControl>
+        <Border x:Name="gridPinKilit" Grid.RowSpan="2" 
+                Width="300" Height="170" 
+                Background="{StaticResource BgPanel}" 
+                BorderBrush="{StaticResource AccentBlue}" BorderThickness="2" CornerRadius="4"
+                HorizontalAlignment="Center" VerticalAlignment="Center" 
+                Panel.ZIndex="1000" Visibility="Collapsed" Padding="20">
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Text="🔒 Rapor Şifresi" FontSize="15" FontWeight="Bold" Foreground="White" HorizontalAlignment="Center" Margin="0,0,0,15"/>
+
+                <PasswordBox x:Name="txtPinGiris" Background="{StaticResource BgDark}" Foreground="White" 
+                             BorderBrush="{StaticResource BorderColor}" BorderThickness="1" 
+                             Padding="10" FontSize="18" HorizontalContentAlignment="Center" 
+                             PasswordChar="●" MaxLength="6" Margin="0,0,0,15"
+                             KeyDown="txtPinGiris_KeyDown"/>
+
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Button Grid.Column="0" Content="İptal" Background="Transparent" Foreground="{StaticResource TextSecondary}" FontSize="13" FontWeight="Bold" BorderThickness="0" Cursor="Hand" Click="btnPinIptal_Click" Margin="0,0,5,0"/>
+                    <Button Grid.Column="1" Content="Aç" Height="34" Background="{StaticResource AccentBlue}" Foreground="White" FontSize="13" FontWeight="Bold" Template="{StaticResource RoundBtnTemplate}" Cursor="Hand" Click="btnPinOnay_Click" Margin="5,0,0,0"/>
+                </Grid>
+            </StackPanel>
+        </Border>
     </Grid>
 </Window>
