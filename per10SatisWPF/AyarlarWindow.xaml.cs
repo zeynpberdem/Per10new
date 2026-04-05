@@ -454,9 +454,20 @@ namespace per10SatisWPF
             try
             {
                 var satirlar = new System.Collections.Generic.List<string>
-                    { "Sepet #;Net Tutar;İndirim;Tarih" };
+                     { "Sepet #;Net Tutar;İndirim;Tarih" };
+
+                // 1. Önce listedeki tüm satışları ekle
                 foreach (dynamic item in dgSepetler.ItemsSource)
                     satirlar.Add($"{item.SepetID};{item.Toplam};{item.Indirim};{item.Tarih}");
+
+                // 2. Alt kısma biraz boşluk ve ÖZET BİLGİLERİ ekle
+                satirlar.Add(""); // Bir satır boşluk bırak
+                satirlar.Add("--- OZET BİLGİLER ---;;;");
+                satirlar.Add($"Tarih Aralığı:;{dpBaslangic.SelectedDate.Value:dd.MM.yyyy} - {dpBitis.SelectedDate.Value:dd.MM.yyyy};;");
+                satirlar.Add($"Toplam Ciro:;{lblCiro.Text};;");
+                satirlar.Add($"Toplam Kar:;{lblKar.Text};;");
+
+                // 3. Dosyayı kaydet
                 System.IO.File.WriteAllLines(dlg.FileName, satirlar, System.Text.Encoding.UTF8);
 
                 // SQL'den sil
@@ -502,10 +513,21 @@ namespace per10SatisWPF
             try
             {
                 var satirlar = new System.Collections.Generic.List<string> { "ID;Tutar;Tarih" };
+
+                // 1. Önce listedeki tüm yıkama kayıtlarını ekle
                 foreach (dynamic item in dgYikamalar.ItemsSource)
                     satirlar.Add($"{item.YikamaID};{item.Tutar};{item.Tarih}");
-                System.IO.File.WriteAllLines(dlg.FileName, satirlar, System.Text.Encoding.UTF8);
 
+                // 2. Alt kısma biraz boşluk ve ÖZET BİLGİLERİ ekle
+                satirlar.Add(""); // Bir satır boşluk bırak
+                satirlar.Add("--- OZET BİLGİLER ---;;");
+                satirlar.Add($"Tarih Aralığı:;{dpYikamaBaslangic.SelectedDate.Value:dd.MM.yyyy} - {dpYikamaBitis.SelectedDate.Value:dd.MM.yyyy};");
+                satirlar.Add($"Toplam Yıkama Geliri:;{lblYikamaToplam.Text};");
+                satirlar.Add($"Toplam Yıkama Sayısı:;{lblYikamaSayisi.Text};");
+                satirlar.Add($"Ortalama Yıkama Tutarı:;{lblYikamaOrtalama.Text};");
+
+                // 3. Dosyayı kaydet
+                System.IO.File.WriteAllLines(dlg.FileName, satirlar, System.Text.Encoding.UTF8);
                 // SQL'den sil
                 DateTime bas   = dpYikamaBaslangic.SelectedDate.Value.Date.AddHours(8);
                 DateTime bitis = dpYikamaBitis.SelectedDate.Value.Date.AddDays(1).AddHours(3);
