@@ -177,7 +177,7 @@
                             <Border x:Name="bdUrunSayisi" Background="{StaticResource BgCard}"
                                     CornerRadius="12" Margin="10,0,0,0" Padding="10,3">
                                 <TextBlock x:Name="lblUrunSayisi" Text="0 ürün"
-                                           Foreground="{DynamicResource AccentOrange}" FontSize="12"/>
+                                           Foreground="{DynamicResource TextPrimary}" FontSize="12"/>
                             </Border>
                         </StackPanel>
                     </Grid>
@@ -209,7 +209,7 @@
                         <Grid>
                             <StackPanel Orientation="Horizontal">
                                 <TextBlock Text="🛒" FontSize="16" Margin="0,0,8,0"
-                                           VerticalAlignment="Center"/>
+                                           VerticalAlignment="Center" Foreground="#FFBEC10F"/>
                                 <TextBlock Text="Sepet" FontSize="16" FontWeight="Bold"
                                            Foreground="{StaticResource TextPrimary}"
                                            VerticalAlignment="Center"/>
@@ -255,7 +255,7 @@
                         <Grid>
                             <StackPanel>
                                 <TextBlock Text="TOPLAM TUTAR"
-                                           Foreground="{StaticResource TextSecondary}"
+                                           Foreground="#FF00FF6C"
                                            FontSize="10" FontWeight="Bold" Margin="0,0,0,2"/>
                                 <TextBlock x:Name="lblToplam" Text="0,00 ₺"
                                            Foreground="{StaticResource TextPrimary}"

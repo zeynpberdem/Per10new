@@ -20,6 +20,7 @@ namespace per10SatisWPF
         private List<SepetItem> _sepet   = new();
         private List<Urun>      _urunler = new();
         private int    _aktifTurID = 0;
+        private readonly DispatcherTimer _idleTimer = new DispatcherTimer { Interval = TimeSpan.FromSeconds(10) };
         private readonly DispatcherTimer _barkodTimer = new DispatcherTimer
             { Interval = TimeSpan.FromMilliseconds(200) };
 
@@ -29,6 +30,12 @@ namespace per10SatisWPF
         public MainWindow()
         {
             InitializeComponent();
+
+            _idleTimer.Tick += (s, e) => txtBarkod.Focus(); // 10 sn dolunca barkoda zıpla
+            this.PreviewKeyDown += (s, e) => { _idleTimer.Stop(); _idleTimer.Start(); }; // Tuşa basılınca süreyi sıfırla
+            this.PreviewMouseDown += (s, e) => { _idleTimer.Stop(); _idleTimer.Start(); }; // Fareye tıklanınca süreyi sıfırla
+            _idleTimer.Start();
+
             _barkodTimer.Tick += (s, e) => { _barkodTimer.Stop(); BarkodIleAra(); };
             Loaded += (s, e) =>
             {
@@ -36,9 +43,10 @@ namespace per10SatisWPF
                 KategorileriYukle();
                 UrunleriYukle(0);
                 PlaceholderSet(txtArama);
+               
             };
         }
-
+       
         // ─── SAAT ─────────────────────────────────────────────────────
         private void SaatBaslat()
         {
@@ -369,6 +377,7 @@ namespace per10SatisWPF
                 Adet       = 1
             });
             SepetYenile();
+            txtBarkod.Focus();
         }
 
         private int StokGetir(int urunID)
@@ -602,6 +611,7 @@ namespace per10SatisWPF
                 MessageBox.Show($"✅  {tutar:N2} ₺ yıkama geliri kaydedildi!", "Başarılı",
                     MessageBoxButton.OK, MessageBoxImage.None);
                 txtYikamaTutar.Clear();
+                txtBarkod.Focus();
             }
             catch (Exception ex) { MessageBox.Show($"Kayıt hatası: {ex.Message}", "Hata"); }
         }
@@ -651,6 +661,7 @@ namespace per10SatisWPF
                 txtIndirim.Text = "";
                 SepetYenile();
                 UrunleriYukle(_aktifTurID);
+                txtBarkod.Focus();
             }
             catch (Exception ex) { MessageBox.Show($"Ödeme hatası: {ex.Message}", "Hata"); }
         }
