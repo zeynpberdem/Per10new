@@ -1,12 +1,12 @@
 <Window x:Class="per10SatisWPF.LoginWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="Per10 Satış Sistemi - Giriş"
+        Title="NW NEON Satış Sistemi - Giriş"
         Height="480" Width="400"
         WindowStartupLocation="CenterScreen"
         ResizeMode="NoResize"
         Background="{StaticResource BgDark}"
-        Icon="favicon.ico">
+        Icon="C:\Users\zeynep\Downloads\favicon.ico">
     <Window.Resources>
         <SolidColorBrush x:Key="TextWhite" Color="#EDF0F7"/>
         <SolidColorBrush x:Key="TextGray"  Color="#6B7A99"/>
@@ -17,14 +17,14 @@
 
             <!-- Logo -->
             <Border CornerRadius="40"
-                    Width="72" Height="72" HorizontalAlignment="Center" Margin="0,0,0,16">
+                    Width="84" Height="88" HorizontalAlignment="Center" Margin="0,0,0,16">
                 <Border.Background>
-                    <ImageBrush ImageSource="/429133874_1148074973270485_3369770598999947412_n.jpg" Stretch="UniformToFill"/>
+                    <ImageBrush ImageSource="C:\Users\zeynep\Desktop\Per10new-main\Per10new-main\per10SatisWPF\2357ef8f-e229-4c61-9e05-179a2e20d3a6.jpg" Stretch="UniformToFill"/>
                 </Border.Background>
             </Border>
 
             <!-- Başlık -->
-            <TextBlock Text="Per10 Satış Sistemi" FontSize="20" FontWeight="Bold"
+            <TextBlock Text="NW NEON Satış Sistemi" FontSize="20" FontWeight="Bold"
                        Foreground="{StaticResource TextWhite}" HorizontalAlignment="Center" Margin="0,0,0,6"/>
             <TextBlock Text="Hesabınıza giriş yapın" FontSize="13"
                        Foreground="{StaticResource TextGray}" HorizontalAlignment="Center" Margin="0,0,0,28"/>
